@@ -1,5 +1,7 @@
 // ===== TRACKING =====
 
+function populateTrkSvcFilter(){const sel=document.getElementById('trk-svc');if(!sel)return;const cur=sel.value;sel.innerHTML='<option value="">Todos</option>'+SERVICES().map(s=>`<option value="${s}">${s}</option>`).join('');sel.value=cur;}
+
 function filterTracking(s,el){
   _tf=s;
   document.querySelectorAll('.service-tab').forEach(t=>t.classList.remove('active'));
