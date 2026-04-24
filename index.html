@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>elle studio · v2</title>
+<meta name="theme-color" content="#1c1f18">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ── Agenda items ────────────────────────────── */
+.agenda-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.agenda-item:last-child{border-bottom:none;}
+.agenda-hora{font-size:0.9rem;font-weight:500;color:var(--sage-dark);min-width:60px;}
+.agenda-info{flex:1;}
+.agenda-nombre{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;}
+.agenda-det{font-size:0.78rem;color:var(--text-light);margin-top:2px;}
+/* ── Zona rows ───────────────────────────────── */
+.zona-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);}
+.zona-row:last-child{border-bottom:none;}
+.zona-nombre{font-size:0.85rem;min-width:110px;}
+.zona-progress{display:flex;align-items:center;gap:8px;flex:1;}
+.zona-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.zona-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--gold));border-radius:3px;transition:width 0.3s;}
+.zona-count{font-size:0.78rem;color:var(--text-light);white-space:nowrap;}
+/* ── Svc block ───────────────────────────────── */
+.svc-block{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+.svc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+/* ── Filters ─────────────────────────────────── */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.filter-row select,.filter-row input{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.83rem;background:white;color:var(--text);outline:none;}
+/* ── Pagos summary ───────────────────────────── */
+.pg-summary{display:flex;gap:20px;padding:12px 16px;background:var(--warm-white);border-radius:10px;margin-bottom:14px;flex-wrap:wrap;}
+.pg-summary span{font-size:0.83rem;color:var(--text-light);}
+.pg-summary strong{color:var(--sage-dark);}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ─────────────────────────────────────────────── -->
+<div id="loginScreen" class="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">elle</div>
+    <div class="login-sub">studio</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <input id="loginPass" type="password" class="input" placeholder="Contraseña" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Ingresar</button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ── APP ───────────────────────────────────────────────── -->
+<div id="app" style="display:none">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo">
+      <h1>elle</h1>
+      <p>studio</p>
+    </div>
+    <div class="header-actions">
+      <div id="syncDot" class="sync-dot"></div>
+      <button class="btn btn-secondary btn-sm" onclick="manualRefresh()">↻ Refrescar</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('nuevoPacienteModal')">+ Nueva Paciente</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Salir</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="app-tabs">
+    <button class="app-tab active" data-section="inicio"      onclick="showSection('inicio')">Inicio</button>
+    <button class="app-tab"        data-section="precitas"    onclick="showSection('precitas')">Pre-citas</button>
+    <button class="app-tab"        data-section="pacientes"   onclick="showSection('pacientes')">Pacientes</button>
+    <button class="app-tab"        data-section="seguimiento" onclick="showSection('seguimiento')">Seguimiento</button>
+    <button class="app-tab"        data-section="pagos"       onclick="showSection('pagos')">Pagos</button>
+  </nav>
+
+  <main class="app-main">
+
+    <!-- ── INICIO ──────────────────────────────────────────── -->
+    <div id="sec-inicio" class="section active">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-number" id="statPacientes">—</div>
+          <div class="stat-label">Pacientes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statSesiones">—</div>
+          <div class="stat-label">Sesiones</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statContactar">—</div>
+          <div class="stat-label">A Contactar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statLaser">—</div>
+          <div class="stat-label">Láser</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2>Agenda de Hoy</h2>
+        <button class="btn btn-primary btn-sm" onclick="openModal('nuevaCitaModal')">+ Agregar cita</button>
+      </div>
+      <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);padding:16px 18px;">
+        <div id="agendaHoyList"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ── PRE-CITAS ────────────────────────────────────────── -->
+    <div id="sec-precitas" class="section">
+      <div class="section-header">
+        <h2>Pre-citas <span id="pcCount" style="font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text-light);font-weight:400"></span></h2>
+        <button class="btn btn-primary btn-sm" onclick="openModal('nuevaPreCitaModal')">+ Nueva</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Nombre</th><th>Teléfono</th>
+              <th>Servicio</th><th>Estado</th><th>Separación</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="preCitasBody"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PACIENTES ────────────────────────────────────────── -->
+    <div id="sec-pacientes" class="section">
+      <div class="section-header">
+        <h2>Pacientes</h2>
+        <span id="pacCount" style="font-size:0.85rem;color:var(--text-light)"></span>
+      </div>
+      <div class="toolbar" style="margin-bottom:16px">
+        <input class="search-input" placeholder="🔍 Buscar por nombre o teléfono..."
+          oninput="_pacSearch=this.value;renderPacientes()">
+      </div>
+      <div id="pacientesGrid" class="cards-grid"><div class="spinner"></div></div>
+    </div>
+
+    <!-- ── SEGUIMIENTO ──────────────────────────────────────── -->
+    <div id="sec-seguimiento" class="section">
+      <div class="section-header"><h2>Seguimiento</h2></div>
+      <div id="seguimientoList"><div class="spinner"></div></div>
+    </div>
+
+    <!-- ── PAGOS ────────────────────────────────────────────── -->
+    <div id="sec-pagos" class="section">
+      <div class="section-header">
+        <h2>Pagos</h2>
+        <button class="btn btn-primary btn-sm" onclick="openModal('nuevoPagoModal')">+ Nuevo registro</button>
+      </div>
+      <div class="toolbar" style="margin-bottom:10px">
+        <input class="search-input" placeholder="🔍 Buscar paciente o servicio..."
+          oninput="_pgSearch=this.value;renderPagos()">
+      </div>
+      <div class="pg-summary">
+        <span>Registros: <strong id="pgCount">—</strong></span>
+        <span>Total: <strong id="pgTotal">—</strong></span>
+        <span>Adelantos: <strong id="pgAdelanto">—</strong></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Paciente</th><th>Servicio</th><th>Atendió</th>
+              <th>Total</th><th>Adelanto</th><th>Notas</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="pagosBody"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /app -->
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- MODALES                                                    -->
+<!-- ────────────────────────────────────────────────────────── -->
+
+<!-- Detalle paciente -->
+<div id="pacienteModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="detNombre">—</h3>
+      <button class="modal-close" onclick="closeModal('pacienteModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div><div class="form-label">Teléfono</div><div id="detTelefono"></div></div>
+        <div><div class="form-label">Desde</div><div id="detInicio"></div></div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:8px">Servicios y zonas</div>
+        <div id="detServicios"></div>
+      </div>
+      <div>
+        <div class="form-label">Comentarios</div>
+        <div id="detComentarios" style="font-size:0.88rem;color:var(--text-light)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nueva paciente -->
+<div id="nuevoPacienteModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nueva Paciente</h3>
+      <button class="modal-close" onclick="closeModal('nuevoPacienteModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nombre *</label><input id="npNombre" class="input" placeholder="Nombre"></div>
+      <div class="form-group"><label class="form-label">Apellido</label><input id="npApellido" class="input" placeholder="Apellido"></div>
+      <div class="form-group"><label class="form-label">Teléfono</label><input id="npTelefono" class="input" placeholder="+51 999 999 999"></div>
+      <div class="form-group">
+        <label class="form-label">Servicio *</label>
+        <select id="npServicio" class="select">
+          <option value="">Seleccionar...</option>
+          <option>Depilación Láser</option>
+          <option>GlúTeos De Porcelana</option>
+          <option>Body Porcelana</option>
+          <option>Glúteos de Porcelana</option>
+          <option>Sculpt Body</option>
+          <option>Slimbody</option>
+          <option>Productos (Ventas)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cubículo</label>
+        <select id="npCubiculo" class="select">
+          <option value="">—</option>
+          <option value="Cub. 01">Cub. 01</option>
+          <option value="Cub. 02">Cub. 02</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('nuevoPacienteModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarNuevoPaciente()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nuevo pago -->
+<div id="nuevoPagoModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Registrar Pago</h3>
+      <button class="modal-close" onclick="closeModal('nuevoPagoModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Fecha *</label><input id="nrFecha" type="date" class="input"></div>
+        <div class="form-group"><label class="form-label">Atendió</label><input id="nrAtendio" class="input" placeholder="Nombre"></div>
+        <div class="form-group"><label class="form-label">Nombre *</label><input id="nrNombre" class="input" placeholder="Nombre"></div>
+        <div class="form-group"><label class="form-label">Apellido</label><input id="nrApellido" class="input" placeholder="Apellido"></div>
+        <div class="form-group"><label class="form-label">Teléfono</label><input id="nrTelefono" class="input" placeholder="Teléfono"></div>
+        <div class="form-group">
+          <label class="form-label">Servicio</label>
+          <select id="nrServicio" class="select">
+            <option value="">—</option>
+            <option>Depilación Láser</option>
+            <option>GlúTeos De Porcelana</option>
+            <option>Body Porcelana</option>
+            <option>Glúteos de Porcelana</option>
+            <option>Sculpt Body</option>
+            <option>Slimbody</option>
+            <option>Productos (Ventas)</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Zonas</label><input id="nrZonas" class="input" placeholder="Ej: gluteos, bikini"></div>
+        <div class="form-group"><label class="form-label">Total S/</label><input id="nrTotal" type="number" step="0.01" class="input" placeholder="0.00"></div>
+        <div class="form-group"><label class="form-label">Adelanto S/</label><input id="nrAdelanto" type="number" step="0.01" class="input" placeholder="0.00"></div>
+        <div class="form-group"><label class="form-label">Comisión S/</label><input id="nrComision" type="number" step="0.01" class="input" placeholder="0.00"></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Notas</label><input id="nrNotas" class="input" placeholder="Opcional"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('nuevoPagoModal')">Cancelar</button>
+        <button id="btnGuardarPago" class="btn btn-primary" onclick="guardarNuevoPago()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nueva pre-cita -->
+<div id="nuevaPreCitaModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nueva Pre-cita</h3>
+      <button class="modal-close" onclick="closeModal('nuevaPreCitaModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Nombre *</label><input id="pcNombre" class="input" placeholder="Nombre"></div>
+        <div class="form-group"><label class="form-label">Apellido</label><input id="pcApellido" class="input" placeholder="Apellido"></div>
+        <div class="form-group"><label class="form-label">Teléfono</label><input id="pcTelefono" class="input" placeholder="Teléfono"></div>
+        <div class="form-group">
+          <label class="form-label">Servicio</label>
+          <select id="pcServicio" class="select">
+            <option value="">—</option>
+            <option>Depilación Láser</option>
+            <option>GlúTeos De Porcelana</option>
+            <option>Body Porcelana</option>
+            <option>Glúteos de Porcelana</option>
+            <option>Sculpt Body</option>
+            <option>Slimbody</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Fecha tentativa</label><input id="pcFecha" type="date" class="input"></div>
+        <div class="form-group"><label class="form-label">Hora</label><input id="pcHora" type="time" class="input"></div>
+        <div class="form-group">
+          <label class="form-label">Cubículo</label>
+          <select id="pcCubiculo" class="select">
+            <option value="">—</option>
+            <option value="Cub. 01">Cub. 01</option>
+            <option value="Cub. 02">Cub. 02</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Separación S/</label><input id="pcSeparacion" type="number" step="0.01" class="input" placeholder="0.00"></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Notas</label><input id="pcNotas" class="input" placeholder="Opcional"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('nuevaPreCitaModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarNuevaPreCita()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ── Scripts (orden importa) ──────────────────────────────── -->
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/inicio.js"></script>
+<script src="js/pacientes.js"></script>
+<script src="js/pagos.js"></script>
+<script src="js/precitas.js"></script>
+<script src="js/seguimiento.js"></script>
+<script>
+// ── Helpers extras ───────────────────────────────────────────
+async function manualRefresh() {
+  setSyncState('syncing');
+  try {
+    await Promise.all([loadPatients(), loadPayments(), loadPreCitas(), loadCitas()]);
+    setSyncState('idle');
+    showToast('✅ Datos actualizados');
+    renderInicio();
+    renderPacientes();
+    renderPagos();
+    renderPreCitas();
+  } catch(e) {
+    setSyncState('error');
+    showToast('❌ Error al actualizar', '#c0392b', 4000);
+  }
+}
+
+// Cerrar modal al click fuera
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Set fecha hoy en forms de pago
+document.getElementById('nrFecha').valueAsDate = new Date();
+
+// ── Boot ─────────────────────────────────────────────────────
+bootAuth();
+</script>
+</body>
+</html>
