@@ -3,380 +3,1846 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>elle studio · v2</title>
+<title>elle studio · Gestión de Pacientes</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="elle studio">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1c1f18">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231c1f18'/><text x='90' y='115' text-anchor='middle' font-family='Georgia,serif' font-size='72' fill='%23e8e0cc'>e</text></svg>">
+<link rel="manifest" id="pwaManifest">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/layout.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-/* ── Agenda items ────────────────────────────── */
-.agenda-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
-.agenda-item:last-child{border-bottom:none;}
-.agenda-hora{font-size:0.9rem;font-weight:500;color:var(--sage-dark);min-width:60px;}
-.agenda-info{flex:1;}
-.agenda-nombre{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;}
-.agenda-det{font-size:0.78rem;color:var(--text-light);margin-top:2px;}
-/* ── Zona rows ───────────────────────────────── */
-.zona-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);}
-.zona-row:last-child{border-bottom:none;}
-.zona-nombre{font-size:0.85rem;min-width:110px;}
-.zona-progress{display:flex;align-items:center;gap:8px;flex:1;}
-.zona-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
-.zona-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--gold));border-radius:3px;transition:width 0.3s;}
-.zona-count{font-size:0.78rem;color:var(--text-light);white-space:nowrap;}
-/* ── Svc block ───────────────────────────────── */
-.svc-block{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
-.svc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-/* ── Filters ─────────────────────────────────── */
-.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-.filter-row select,.filter-row input{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.83rem;background:white;color:var(--text);outline:none;}
-/* ── Pagos summary ───────────────────────────── */
-.pg-summary{display:flex;gap:20px;padding:12px 16px;background:var(--warm-white);border-radius:10px;margin-bottom:14px;flex-wrap:wrap;}
-.pg-summary span{font-size:0.83rem;color:var(--text-light);}
-.pg-summary strong{color:var(--sage-dark);}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
-<!-- ── LOGIN ─────────────────────────────────────────────── -->
-<div id="loginScreen" class="login-screen" style="display:none">
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-bg"></div>
+  <!-- Watermark logo background -->
+  <div style="position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+    
+  </div>
   <div class="login-card">
-    <div class="login-logo">elle</div>
-    <div class="login-sub">studio</div>
-    <div class="form-group" style="margin-bottom:14px">
-      <input id="loginPass" type="password" class="input" placeholder="Contraseña" autocomplete="current-password">
+    <div style="margin:0 auto 24px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <!-- Logo Elle Studio — tipografía elegante cursiva-serif -->
+      <svg width="220" height="110" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&amp;display=swap');
+          </style>
+        </defs>
+        <!-- "elle" en serif cursivo, peso ligero, muy elegante -->
+        <text x="110" y="78"
+          font-family="'Cormorant Garamond', Georgia, 'Times New Roman', serif"
+          font-size="72"
+          font-weight="300"
+          font-style="italic"
+          letter-spacing="-2"
+          fill="#b8a898"
+          text-anchor="middle">elle</text>
+        <!-- línea decorativa fina -->
+        <line x1="62" y1="88" x2="158" y2="88" stroke="#b8a898" stroke-width="0.6" opacity="0.7"/>
+        <!-- "STUDIO" espaciado debajo -->
+        <text x="110" y="104"
+          font-family="'Cormorant Garamond', Georgia, serif"
+          font-size="10"
+          font-weight="300"
+          font-style="normal"
+          letter-spacing="7"
+          fill="#b8a898"
+          text-anchor="middle">STUDIO</text>
+      </svg>
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Ingresar</button>
-    <div id="loginError" class="login-error"></div>
+    <div class="login-sub" style="margin-bottom:40px;letter-spacing:5px;font-size:0.68rem;">Gestión de Pacientes</div>
+    <div class="login-divider"></div>
+
+    <!-- Botones de rol -->
+    <div id="loginRoleBtns">
+      <button class="login-btn login-btn-admin" onclick="selectRole('admin')">✦ Acceso Administradora</button>
+      <button class="login-btn login-btn-worker" onclick="selectRole('worker')">· Acceso Trabajadora</button>
+    </div>
+
+    <!-- Input contraseña -->
+    <div class="login-input-wrap" id="loginPwWrap">
+      <input class="login-input" type="password" id="loginPwInput" placeholder="• • • • • •" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-enter-btn" onclick="doLogin()">Ingresar</button>
+      <div class="login-error" id="loginError">Contraseña incorrecta. Intenta de nuevo.</div>
+      <div class="login-back" id="loginBack" onclick="backToRoles()">← Volver</div>
+    </div>
   </div>
 </div>
 
-<!-- ── APP ───────────────────────────────────────────────── -->
-<div id="app" style="display:none">
-
-  <!-- Header -->
-  <header class="app-header">
-    <div class="logo">
-      <h1>elle</h1>
-      <p>studio</p>
+<header style="position:relative;" id="mainHeader">
+  <!-- Floating orbs for subtle ambiance -->
+  <div class="header-orb" style="width:120px;height:120px;background:radial-gradient(circle,rgba(138,160,100,0.07),transparent);left:15%;bottom:-40px;animation-duration:8s;animation-delay:0s;"></div>
+  <div class="header-orb" style="width:80px;height:80px;background:radial-gradient(circle,rgba(200,180,130,0.06),transparent);left:40%;bottom:-20px;animation-duration:11s;animation-delay:2s;"></div>
+  <div class="header-orb" style="width:60px;height:60px;background:radial-gradient(circle,rgba(138,160,100,0.08),transparent);left:65%;bottom:-30px;animation-duration:9s;animation-delay:4s;"></div>
+  <div class="header-orb" style="width:100px;height:100px;background:radial-gradient(circle,rgba(200,180,130,0.05),transparent);left:80%;bottom:-50px;animation-duration:13s;animation-delay:1s;"></div>
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+      <svg width="220" height="78" viewBox="0 0 220 78" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+        <defs>
+          <!-- Sweeping gold shimmer gradient -->
+          <linearGradient id="elleSweep" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c8b882" stop-opacity="1"/>
+            <stop offset="40%" stop-color="#c8b882" stop-opacity="1"/>
+            <stop offset="50%" stop-color="#fffbe8" stop-opacity="1"/>
+            <stop offset="60%" stop-color="#c8b882" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#c8b882" stop-opacity="1"/>
+            <animateTransform attributeName="gradientTransform" type="translate" from="-220 0" to="220 0" dur="3.5s" repeatCount="indefinite"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+          <linearGradient id="goldLine" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#8c7c5a" stop-opacity="0"/>
+            <stop offset="50%" stop-color="#fff0a0" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#8c7c5a" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Main text with sweeping shimmer -->
+        <text x="110" y="52" font-family="'Cormorant Garamond', Georgia, serif" font-size="58" font-weight="300" font-style="italic" letter-spacing="-1" fill="url(#elleSweep)" text-anchor="middle" filter="url(#glow)">elle</text>
+        <!-- Subtle gold line -->
+        <line x1="52" y1="60" x2="168" y2="60" stroke="url(#goldLine)" stroke-width="0.7"/>
+        <!-- STUDIO text -->
+        <text x="110" y="73" font-family="'Cormorant Garamond', Georgia, serif" font-size="8.5" font-weight="300" letter-spacing="7" fill="#c8b882" text-anchor="middle" opacity="0.7">STUDIO</text>
+      </svg>
     </div>
-    <div class="header-actions">
-      <div id="syncDot" class="sync-dot"></div>
-      <button class="btn btn-secondary btn-sm" onclick="manualRefresh()">↻ Refrescar</button>
-      <button class="btn btn-primary btn-sm" onclick="openModal('nuevoPacienteModal')">+ Nueva Paciente</button>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Salir</button>
+  </div>
+  <div style="flex:1;"></div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <!-- Indicador de sincronización Supabase (solo punto) -->
+    <div id="syncIndicator" title="Datos locales" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:rgba(20,20,16,0.35);border:1px solid rgba(240,213,209,0.15);">
+      <span id="syncIcon" style="width:10px;height:10px;border-radius:50%;background:#777;"></span>
     </div>
-  </header>
+    <button class="btn btn-secondary" onclick="manualRefreshData()" title="Volver a cargar datos desde la nube" style="font-size:0.8rem;padding:6px 10px;">↻ Refrescar</button>
+    <button class="btn btn-primary" onclick="openNewPatientModal()">+ Nueva Paciente</button>
+    <!-- Menu trigger -->
+    <div style="position:relative;">
+      <button onclick="toggleHeaderMenu()" id="headerMenuBtn" style="width:38px;height:38px;border-radius:50%;background:rgba(240,213,209,0.12);border:1px solid rgba(240,213,209,0.2);color:#f0d5d1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;" title="Menú">☰</button>
+      <div id="headerDropdown" style="display:none;position:fixed;right:12px;top:70px;background:#2a2a22;border:1px solid rgba(240,213,209,0.12);border-radius:14px;padding:8px;min-width:200px;box-shadow:0 12px 40px rgba(0,0,0,0.4);z-index:99999;">
+        <span id="roleIndicator" style="display:block;padding:8px 12px;margin-bottom:4px;"></span>
+        <button id="activeSessionsBtn" onclick="openActiveSessions();closeHeaderMenu()" style="display:none;width:100%;text-align:left;padding:10px 14px;border-radius:10px;background:none;border:none;color:#c8c0b0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.84rem;gap:10px;align-items:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Sesiones activas</button>
+        <button onclick="openBackupHistory();closeHeaderMenu()" style="width:100%;text-align:left;padding:10px 14px;border-radius:10px;background:none;border:none;color:#c8c0b0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.84rem;">💾 Respaldo</button>
+        <button onclick="openSettings();closeHeaderMenu()" style="width:100%;text-align:left;padding:10px 14px;border-radius:10px;background:none;border:none;color:#c8c0b0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.84rem;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Configuración</button>
+        <button onclick="window.open('landing.html','_blank');closeHeaderMenu()" style="width:100%;text-align:left;padding:10px 14px;border-radius:10px;background:none;border:none;color:#c8c0a8;font-size:0.92rem;cursor:pointer;">🌐 Página web</button>
+<button id="terminalMenuBtn" onclick="openDiagTerminal();closeHeaderMenu()" style="width:100%;text-align:left;padding:10px 14px;border-radius:10px;background:none;border:none;color:#7ec8a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.84rem;display:none;">⚡ Terminal</button>
+        <div style="height:1px;background:rgba(240,213,209,0.1);margin:6px 0;"></div>
+        <button id="logoutBtnMenu" onclick="logout()" style="width:100%;text-align:left;padding:10px 14px;border-radius:10px;background:none;border:none;color:rgba(240,180,170,0.7);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.84rem;">← Salir</button>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="showSection('inicio',this)">Inicio</div>
+  <div class="tab" onclick="showSection('precitas',this)">Pre-citas</div>
+  <div class="tab" onclick="showSection('pacientes',this)">Pacientes</div>
+  <div class="tab" onclick="showSection('seguimiento',this)">Seguimiento</div>
+  <div class="tab" onclick="showSection('pagos',this)">Pagos</div>
+  <div class="tab" onclick="showSection('whatsapp',this)">WhatsApp</div>
+  <div class="tab" onclick="showSection('precios',this)">Lista de Precios</div>
+</div>
+<main>
+<!-- INICIO -->
+<div class="section active" id="sec-inicio">
+  <!-- Stats rápidas -->
+  <div class="stats-inicio" id="statsInicio"></div>
 
-  <!-- Tabs -->
-  <nav class="app-tabs">
-    <button class="app-tab active" data-section="inicio"      onclick="showSection('inicio')">Inicio</button>
-    <button class="app-tab"        data-section="precitas"    onclick="showSection('precitas')">Pre-citas</button>
-    <button class="app-tab"        data-section="pacientes"   onclick="showSection('pacientes')">Pacientes</button>
-    <button class="app-tab"        data-section="seguimiento" onclick="showSection('seguimiento')">Seguimiento</button>
-    <button class="app-tab"        data-section="pagos"       onclick="showSection('pagos')">Pagos</button>
-  </nav>
+  <!-- Buscador global -->
+  <div style="position:relative;margin-bottom:20px;">
+    <div class="inicio-search-wrap">
+      <input class="inicio-search" id="inicioSearch" placeholder="🔍 Buscar paciente por nombre o apellido..." oninput="inicioSearchFn(this.value)" onblur="setTimeout(()=>document.getElementById('inicioSearchDrop').classList.remove('open'),350)">
+      <button class="btn btn-primary" onclick="openNewPatientModal()">+ Nueva Paciente</button>
+    </div>
+    <div class="search-results-drop" id="inicioSearchDrop" style="z-index:9999;"></div>
+  </div>
 
-  <main class="app-main">
+  <!-- Grid: alertas + acciones rápidas -->
+  <div class="inicio-grid">
+    <!-- Agenda del Día: Manual + Calendarios embebidos -->
+    <div class="inicio-card" style="grid-column:1/-1;background:linear-gradient(135deg,#fff9f7,#faf0ec);border-color:rgba(184,124,124,0.25);padding:0;overflow:hidden;">
 
-    <!-- ── INICIO ──────────────────────────────────────────── -->
-    <div id="sec-inicio" class="section active">
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-number" id="statPacientes">—</div>
-          <div class="stat-label">Pacientes</div>
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid rgba(184,124,124,0.15);flex-wrap:wrap;gap:10px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--rose-dark);font-weight:600;">
+          📅 Agenda de Hoy — <span id="agendaHoyFecha" style="font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:400;color:var(--text-light);"></span>
         </div>
-        <div class="stat-card">
-          <div class="stat-number" id="statSesiones">—</div>
-          <div class="stat-label">Sesiones</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="statContactar">—</div>
-          <div class="stat-label">A Contactar</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="statLaser">—</div>
-          <div class="stat-label">Láser</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span id="agendaHoyCount" style="font-size:0.77rem;font-weight:400;color:var(--text-light);"></span>
+          <button class="btn btn-primary" style="font-size:0.78rem;padding:6px 13px;" onclick="openNuevaCitaModal()">+ Agregar cita</button>
         </div>
       </div>
 
-      <div class="section-header">
-        <h2>Agenda de Hoy</h2>
-        <button class="btn btn-primary btn-sm" onclick="openModal('nuevaCitaModal')">+ Agregar cita</button>
+      <!-- Lista de citas manuales del día -->
+      <div id="agendaHoyContainer" style="padding:14px 20px 4px;">
+        <div style="color:var(--text-light);font-size:0.85rem;padding:6px 0;">Sin citas registradas para hoy. Usa <strong>+ Agregar cita</strong> para ingresar las reservas del calendario.</div>
       </div>
-      <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);padding:16px 18px;">
-        <div id="agendaHoyList"><div class="spinner"></div></div>
+
+      <!-- Vista semanal -->
+      <div style="border-top:1px solid rgba(184,124,124,0.15);padding:12px 20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleAgendaSemanal()">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--rose-dark);font-weight:600;">📆 Vista Semanal</span>
+          <span id="agSemArrow" style="font-size:0.8rem;color:var(--text-light);">▼</span>
+        </div>
+        <div id="agendaSemanalWrap" style="display:block;margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <button class="btn btn-secondary" style="font-size:0.72rem;padding:4px 10px;" onclick="navSemana(-1)">← Anterior</button>
+            <span id="agSemLabel" style="font-size:0.82rem;font-weight:600;"></span>
+            <button class="btn btn-secondary" style="font-size:0.72rem;padding:4px 10px;" onclick="navSemana(1)">Siguiente →</button>
+          </div>
+          <div id="agendaSemanalGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;"></div>
+        </div>
+      </div>
+
+      <!-- Sección Calendarios: Google + Cal.com API -->
+      <div style="border-top:1px solid rgba(184,124,124,0.15);padding:16px 20px 20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" id="calDualGrid">
+
+          <!-- Google Calendar -->
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--rose-dark);font-weight:600;margin-bottom:10px;">
+              Google Calendar · Cub 01 · Láser
+            </div>
+            <div id="calEmbedFrame0" style="border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--cream);min-height:480px;"></div>
+          </div>
+
+          <!-- Calendario Interno · Vista mensual -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--rose-dark);font-weight:600;">
+                Calendario Interno · Cub 02 &amp; 03
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                <button onclick="navMesInterno(-1)" style="padding:4px 10px;border-radius:16px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:0.8rem;">‹</button>
+                <span id="mesInternoLabel" style="font-size:0.8rem;font-weight:600;min-width:110px;text-align:center;"></span>
+                <button onclick="navMesInterno(1)" style="padding:4px 10px;border-radius:16px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:0.8rem;">›</button>
+                <button onclick="_mesInternoOffset=0;renderMesInterno()" style="padding:4px 10px;border-radius:16px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:0.75rem;">Hoy</button>
+              </div>
+            </div>
+            <div id="mesInternoGrid" style="border:1px solid var(--border);border-radius:12px;padding:10px;background:white;min-height:480px;max-height:520px;overflow-y:auto;"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    <!-- Pacientes a contactar -->
+    <div class="inicio-card" style="grid-column:1/-1;">
+      <div class="inicio-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:7px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Pacientes a Contactar</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:0.72rem;color:var(--text-light);">Mostrar próximos</span>
+          <select id="alertDaysFilter" onchange="renderAlertsInicio();renderStatsInicio();" style="padding:4px 10px;border-radius:16px;border:1.5px solid var(--border);font-size:0.75rem;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer;outline:none;">
+            <option value="3">3 días</option>
+            <option value="7" selected>7 días</option>
+            <option value="14">14 días</option>
+            <option value="30">30 días</option>
+            <option value="60">60 días</option>
+          </select>
+        </div>
+      </div>
+      <div id="alertBannerInicio"><div style="color:var(--text-light);font-size:0.85rem;padding:10px 0;">✅ No hay pacientes para contactar esta semana.</div></div>
+    </div>
+    <!-- Dashboard de métricas -->
+    <div class="inicio-card" style="grid-column:1/-1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleDashMetricas()">
+        <div class="inicio-card-title" style="margin:0;display:flex;align-items:center;gap:7px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg> Métricas del Mes</div>
+        <span id="dashMetArrow" style="font-size:0.8rem;color:var(--text-light);">▶</span>
+      </div>
+      <div id="dashMetricasWrap" style="display:none;margin-top:14px;" ></div>
+    </div>
+  </div>
+
+  <!-- Acciones rápidas -->
+  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--rose-dark);margin-bottom:12px;">Acciones Rápidas</div>
+  <div class="quick-actions" style="margin-bottom:22px;grid-template-columns:repeat(3,1fr);">
+    <button class="quick-action-btn" onclick="openNewPreCita();showSectionById('precitas')">
+      <div class="qa-icon" style="background:rgba(122,140,106,0.1);border-radius:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a8c6a" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="2"/></svg></div>
+      <div><div class="qa-text">Nueva Pre-cita</div><div class="qa-sub">Separación por WhatsApp</div></div>
+    </button>
+    <button class="quick-action-btn" onclick="openNewPatientModal()">
+      <div class="qa-icon" style="background:rgba(122,140,106,0.1);border-radius:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a8c6a" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div><div class="qa-text">Nueva Paciente</div><div class="qa-sub">Registrar en la base de datos</div></div>
+    </button>
+    <button class="quick-action-btn" onclick="showSectionById('pagos')">
+      <div class="qa-icon" style="background:rgba(122,140,106,0.1);border-radius:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a8c6a" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><circle cx="7" cy="15" r="1" fill="#7a8c6a"/></svg></div>
+      <div><div class="qa-text">Ver Pagos</div><div class="qa-sub">Saldos y finanzas</div></div>
+    </button>
+    <button class="quick-action-btn" onclick="showSectionById('seguimiento')">
+      <div class="qa-icon" style="background:rgba(122,140,106,0.1);border-radius:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a8c6a" stroke-width="1.5" stroke-linecap="round"><polyline points="3 17 9 11 13 15 21 7"/><line x1="14" y1="7" x2="21" y2="7"/><line x1="21" y1="7" x2="21" y2="14"/></svg></div>
+      <div><div class="qa-text">Seguimiento</div><div class="qa-sub">Historial de sesiones</div></div>
+    </button>
+    <button class="quick-action-btn" onclick="showSectionById('whatsapp')">
+      <div class="qa-icon" style="background:rgba(122,140,106,0.1);border-radius:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a8c6a" stroke-width="1.5" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+      <div><div class="qa-text">Enviar WhatsApp</div><div class="qa-sub">Recordatorios a pacientes</div></div>
+    </button>
+    <button class="quick-action-btn" onclick="openBackupHistory()">
+      <div class="qa-icon" style="background:rgba(122,140,106,0.1);border-radius:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a8c6a" stroke-width="1.5" stroke-linecap="round"><path d="M12 2v10m0 0l-3-3m3 3l3-3"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg></div>
+      <div><div class="qa-text">Respaldo / Historial</div><div class="qa-sub">Ver versiones anteriores · Descargar Excel</div></div>
+    </button>
+  </div>
+
+  <!-- Agenda por Cubículo -->
+  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--rose-dark);margin-bottom:12px;">Agenda por Cubículo</div>
+  <div class="cal-cards-grid">
+    <a href="https://calendar.app.google/3hRGipXZtueFVbVm6" target="_blank" class="calendar-hero-btn" id="laserCalBtnI">
+      <div class="cal-left">
+        <div class="cal-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div><div class="cal-title">Cubículo 01</div><div class="cal-sub">Depilación Láser · Google Calendar</div><div class="cal-open" id="calTodayDateI"></div></div>
+      </div>
+      <div style="color:rgba(240,213,209,0.6);font-size:1.4rem;">→</div>
+    </a>
+    <a href="javascript:void(0)" onclick="_scrollToCalInterno('02')" class="calendar-hero-btn calendly-btn" id="cal02BtnI">
+      <div class="cal-left">
+        <div class="cal-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div><div class="cal-title">Cubículo 02</div><div class="cal-sub">Glúteos · Facial · Espalda</div><div class="cal-open" style="color:rgba(210,230,190,0.7);">Ver agenda →</div></div>
+      </div>
+      <div style="color:rgba(210,230,190,0.4);font-size:1.4rem;">→</div>
+    </a>
+    <a href="javascript:void(0)" onclick="_scrollToCalInterno('03')" class="calendar-hero-btn" id="cal03BtnI" style="background:linear-gradient(135deg,#0d2818 0%,#1a5c38 60%,#237a4a 100%);">
+      <div class="cal-left">
+        <div class="cal-icon" style="background:rgba(100,220,150,0.15);border-color:rgba(100,220,150,0.25);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div><div class="cal-title" style="color:#c8ffd8;">Cubículo 03</div><div class="cal-sub" style="color:rgba(200,255,220,0.65);">Glúteos · Reductores</div><div class="cal-open" style="color:rgba(200,255,220,0.5);">Ver agenda →</div></div>
+      </div>
+      <div style="color:rgba(200,255,220,0.3);font-size:1.4rem;">→</div>
+    </a>
+  </div>
+
+</div><!-- fin sec-inicio -->
+
+<!-- PACIENTES -->
+<div class="section" id="sec-pacientes">
+  <div class="stats-row" id="statsRow"></div>
+  <div class="section-header">
+    <h2>Base de Datos · Pacientes</h2>
+    <div class="toolbar">
+      <input class="search-box" placeholder="🔍 Buscar paciente..." oninput="filterPatients(this.value)">
+      <select id="serviceFilterSelect" class="search-box" style="flex:0;width:auto;" onchange="filterByService(this.value)"><option value="">Todos los servicios</option></select>
+      <select id="patientSortSelect" class="search-box" style="flex:0;width:auto;" onchange="setSortPatients(this.value)">
+        <option value="nombre">A → Z Nombre</option>
+        <option value="fecha_desc">Más recientes</option>
+        <option value="fecha_asc">Más antiguas</option>
+        <option value="sesiones">Más sesiones</option>
+        <option value="fotos">Con fotos primero</option>
+      </select>
+      <button class="btn btn-primary" onclick="openNewPatientModal()">+ Nueva Paciente</button>
+    </div>
+  </div>
+  <div id="patContactBanner"></div>
+  <div class="patients-grid" id="patientsGrid"></div>
+</div>
+<!-- SEGUIMIENTO -->
+<div class="section" id="sec-seguimiento">
+  <div class="section-header" style="margin-bottom:14px;">
+    <h2>Hoja de Seguimiento</h2>
+    <div style="font-size:0.8rem;color:var(--text-light);" id="trackingCount"></div>
+  </div>
+
+  <!-- Stats rápidos -->
+  <div id="trkStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;"></div>
+
+  <!-- Barra de acciones -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+    <button class="btn btn-secondary" style="font-size:0.78rem;" onclick="trkToggleGroup()" id="trkGroupBtn">👥 Agrupar por paciente</button>
+    <button class="btn btn-secondary" style="font-size:0.78rem;" onclick="trkExportExcel()">📊 Exportar a Excel</button>
+    <div style="flex:1;"></div>
+    <span id="trkBulkCount" style="font-size:0.78rem;color:var(--text-light);display:none;"></span>
+    <button class="btn btn-primary" style="font-size:0.78rem;display:none;" id="trkBulkBtn" onclick="trkMarkSelected()">✓ Marcar seleccionadas como asistió</button>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:16px 18px;margin-bottom:16px;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input class="search-box" id="trk-search" placeholder="🔍 Buscar por nombre..." oninput="applyTrackingFilters()" style="flex:2;min-width:160px;">
+      <select id="trk-svc" class="search-box" style="flex:1;min-width:140px;" onchange="applyTrackingFilters()">
+        <option value="">Todos los servicios</option>
+      </select>
+      <select id="trk-cub" class="search-box" style="flex:0;min-width:130px;" onchange="applyTrackingFilters()">
+        <option value="">Todos los cubículos</option>
+        <option value="01">· I  · Cubículo 01</option>
+        <option value="02">· II · Cubículo 02</option>
+        <option value="03">· III · Cubículo 03</option>
+      </select>
+      <input type="date" id="trk-fecha-desde" class="search-box" style="flex:0;min-width:140px;" onchange="applyTrackingFilters()" title="Fecha sesión desde">
+      <input type="date" id="trk-fecha-hasta" class="search-box" style="flex:0;min-width:140px;" onchange="applyTrackingFilters()" title="Fecha sesión hasta">
+      <select id="trk-proximas" class="search-box" style="flex:0;min-width:140px;" onchange="applyTrackingFilters()" title="Filtrar por próxima sesión">
+        <option value="">Próximas: Todas</option>
+        <option value="hoy">📅 Hoy</option>
+        <option value="semana">🗓 Esta semana</option>
+        <option value="7">⏰ Próximos 7 días</option>
+        <option value="14">📆 Próximos 14 días</option>
+        <option value="30">Próximos 30 días</option>
+        <option value="vencidas">⚠️ Vencidas</option>
+      </select>
+      <button class="btn btn-secondary" onclick="clearTrackingFilters()" style="font-size:0.8rem;white-space:nowrap;">✕ Limpiar</button>
+    </div>
+  </div>
+
+  <!-- Tabs de servicio rápidos -->
+  <div class="service-tabs" id="serviceTabsContainer">
+    <div class="service-tab active" onclick="filterTracking('',this)">Todos</div>
+  </div>
+
+  <!-- Scrollbar superior STICKY (se queda fija arriba al hacer scroll) -->
+  <div id="trkTopScroll" style="position:sticky;top:0;z-index:50;overflow-x:auto;overflow-y:hidden;height:14px;background:#faf5f0;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;box-shadow:0 2px 6px rgba(0,0,0,0.06);" onscroll="_trkSyncScroll('top')">
+    <div id="trkTopScrollInner" style="height:1px;"></div>
+  </div>
+  <div class="table-container" id="trkTableContainer" style="overflow-x:auto;" onscroll="_trkSyncScroll('bottom')">
+    <table class="main-table" id="trkTable">
+      <thead>
+        <tr>
+          <th style="width:30px;text-align:center;"><input type="checkbox" id="trkSelAll" onchange="trkToggleSelectAll(this.checked)" title="Seleccionar todas"></th>
+          <th>Mes</th>
+          <th style="cursor:pointer;user-select:none;" onclick="sortTracking('fecha')">Fecha <span id="sort-fecha">↓</span></th>
+          <th style="cursor:pointer;user-select:none;" onclick="sortTracking('nombre')">Paciente <span id="sort-nombre"></span></th>
+          <th style="cursor:pointer;user-select:none;" onclick="sortTracking('servicio')">Servicio <span id="sort-servicio"></span></th>
+          <th>Zona</th>
+          <th>Sesión #</th>
+          <th style="cursor:pointer;user-select:none;" onclick="sortTracking('proxima')">Próxima <span id="sort-proxima"></span></th>
+          <th>WA</th>
+          <th>Asistió</th>
+          <th>Plan</th>
+          <th>Atendió</th>
+          <th>Notas</th>
+          <th>Cubículo</th>
+        </tr>
+      </thead>
+      <tbody id="trackingBody"></tbody>
+    </table>
+  </div>
+</div>
+<!-- WHATSAPP -->
+<div class="section" id="sec-whatsapp">
+  <div class="section-header"><h2>Mensajes de WhatsApp</h2></div>
+
+  <!-- CALENDARIOS EMBEBIDOS -->
+  <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:16px 20px 20px;margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" id="calDualGridWA">
+
+      <!-- Google Calendar -->
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--rose-dark);font-weight:600;margin-bottom:10px;">
+          Google Calendar · Cub 01 · Láser
+        </div>
+        <div id="calEmbedFrameWA" style="border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--cream);min-height:480px;"></div>
+      </div>
+
+      <!-- Reservas Cal.com -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--rose-dark);font-weight:600;">
+            Reservas Cal.com · Cub 02 &amp; 03
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <select id="calFilterDaysWA" onchange="loadCalBookingsWA()" style="padding:4px 8px;border-radius:16px;border:1.5px solid var(--border);font-size:0.75rem;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer;outline:none;">
+              <option value="1">Hoy</option>
+              <option value="3">3 días</option>
+              <option value="7" selected>Esta semana</option>
+              <option value="14">2 semanas</option>
+              <option value="30">Este mes</option>
+              <option value="0">Todas</option>
+            </select>
+            <select id="calFilterStatusWA" onchange="loadCalBookingsWA()" style="padding:4px 8px;border-radius:16px;border:1.5px solid var(--border);font-size:0.75rem;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer;outline:none;">
+              <option value="upcoming">Próximas</option>
+              <option value="past">Pasadas</option>
+              <option value="cancelled">Canceladas</option>
+              <option value="all">Todas</option>
+            </select>
+            <button onclick="loadCalBookingsWA()" title="Actualizar" style="padding:5px 11px;border-radius:16px;border:none;cursor:pointer;font-size:0.75rem;font-weight:600;font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#1a0f0e,#4a2828);color:#f0d5d1;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+          </div>
+        </div>
+        <div id="calBookingsContainerWA" style="border:1px solid var(--border);border-radius:12px;padding:10px;background:white;min-height:480px;max-height:520px;overflow-y:auto;">
+          <div style="text-align:center;padding:28px;color:var(--text-light);font-size:0.85rem;">
+            <div style="font-size:1.8rem;margin-bottom:8px;"></div>
+            Cargando reservas de Cal.com…
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PLANTILLAS POR SERVICIO -->
+  <div style="margin-bottom:14px;">
+    <button class="btn btn-secondary" onclick="openWaSvcTplModal()" style="font-size:0.78rem;">⚙️ Plantillas por servicio</button>
+  </div>
+  <!-- TARJETAS PREDETERMINADAS -->
+  <div id="waCardsContainer">
+  <div class="wa-card" id="waCard-1" style="border-color:var(--rose);border-width:2px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="margin:0;">💜 Recordatorio — Agendar sesión</h3>
+      <button class="btn btn-secondary" style="font-size:0.72rem;padding:4px 10px;" onclick="toggleEditWa(1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
+    </div>
+    <div style="font-size:0.78rem;color:var(--text-light);margin-bottom:10px;">El link cambia automáticamente según el servicio y cubículo de la paciente</div>
+    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="position:relative;flex:1;min-width:180px;">
+        <input id="waSearch1" class="search-box" placeholder="🔍 Buscar paciente..." oninput="filterWaPatients(1)" autocomplete="off" style="width:100%;box-sizing:border-box;">
+        <div id="waDropdown1" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;max-height:180px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+      </div>
+      <input type="hidden" id="waP1" value="">
+      <select id="waP1svc" class="search-box" style="width:auto;flex:0;" onchange="updateWa(1)"><option value="">Servicio...</option></select>
+    </div>
+    <div class="wa-preview" id="waMsg1" contenteditable="false">Hola [Nombre]! &#10024;
+
+Desde *Elle Studio* te recordamos que tu proxima sesion de *[Servicio]* esta por llegar.
+
+Agenda tu turno aqui:
+[Link]
+
+Te esperamos! &#11088;</div>
+    <div id="waEdit1" style="display:none;margin-top:8px;">
+      <textarea id="waTpl1" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:10px;font-family:inherit;font-size:0.85rem;resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+        <button class="btn btn-primary" style="font-size:0.75rem;" onclick="saveWaTpl(1)">💾 Guardar</button>
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="cancelEditWa(1)">✕ Cancelar</button>
+        <button class="btn" style="font-size:0.75rem;background:#f8f4f0;border:1px solid var(--border);color:var(--text-light);" onclick="resetWaTpl(1)">↺ Restaurar original</button>
       </div>
     </div>
-
-    <!-- ── PRE-CITAS ────────────────────────────────────────── -->
-    <div id="sec-precitas" class="section">
-      <div class="section-header">
-        <h2>Pre-citas <span id="pcCount" style="font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--text-light);font-weight:400"></span></h2>
-        <button class="btn btn-primary btn-sm" onclick="openModal('nuevaPreCitaModal')">+ Nueva</button>
+    <div class="wa-actions"><button class="btn btn-green" onclick="sendWa(1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Enviar WhatsApp</button><button class="btn btn-secondary" onclick="copyWa(1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar</button></div>
+  </div>
+  <div class="wa-card" id="waCard-2">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="margin:0;">⏰ Recordatorio — 1 día antes</h3>
+      <button class="btn btn-secondary" style="font-size:0.72rem;padding:4px 10px;" onclick="toggleEditWa(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
+    </div>
+    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="position:relative;flex:1;min-width:180px;">
+        <input id="waSearch2" class="search-box" placeholder="🔍 Buscar paciente..." oninput="filterWaPatients(2)" autocomplete="off" style="width:100%;box-sizing:border-box;">
+        <div id="waDropdown2" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;max-height:180px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
       </div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Fecha</th><th>Nombre</th><th>Teléfono</th>
-              <th>Servicio</th><th>Estado</th><th>Separación</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="preCitasBody"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
-        </table>
+      <input type="hidden" id="waP2" value="">
+      <select id="waP2svc" class="search-box" style="width:auto;flex:0;" onchange="updateWa(2)"><option value="">Servicio...</option></select>
+    </div>
+    <div class="wa-preview" id="waMsg2" contenteditable="false">Hola [Nombre]! &#10024;
+
+Te recordamos que *manana* tienes tu sesion de *[Servicio]* en *Elle Studio*.
+
+Av. Paz Soldan 235, San Isidro, Lima, Peru
+https://maps.google.com/?q=-12.0977,-77.0365
+Hora según tu reserva
+
+- Llega 5 minutos antes
+- Zona limpia y sin cremas
+- Ropa comoda
+
+Te esperamos! &#11088;</div>
+    <div id="waEdit2" style="display:none;margin-top:8px;">
+      <textarea id="waTpl2" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:10px;font-family:inherit;font-size:0.85rem;resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+        <button class="btn btn-primary" style="font-size:0.75rem;" onclick="saveWaTpl(2)">💾 Guardar</button>
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="cancelEditWa(2)">✕ Cancelar</button>
+        <button class="btn" style="font-size:0.75rem;background:#f8f4f0;border:1px solid var(--border);color:var(--text-light);" onclick="resetWaTpl(2)">↺ Restaurar original</button>
       </div>
     </div>
-
-    <!-- ── PACIENTES ────────────────────────────────────────── -->
-    <div id="sec-pacientes" class="section">
-      <div class="section-header">
-        <h2>Pacientes</h2>
-        <span id="pacCount" style="font-size:0.85rem;color:var(--text-light)"></span>
-      </div>
-      <div class="toolbar" style="margin-bottom:16px">
-        <input class="search-input" placeholder="🔍 Buscar por nombre o teléfono..."
-          oninput="_pacSearch=this.value;renderPacientes()">
-      </div>
-      <div id="pacientesGrid" class="cards-grid"><div class="spinner"></div></div>
+    <div class="wa-actions"><button class="btn btn-green" onclick="sendWa(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Enviar WhatsApp</button><button class="btn btn-secondary" onclick="copyWa(2)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar</button></div>
+  </div>
+  <div class="wa-card" id="waCard-3">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="margin:0;">Recordatorio · El mismo día</h3>
+      <button class="btn btn-secondary" style="font-size:0.72rem;padding:4px 10px;" onclick="toggleEditWa(3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
     </div>
-
-    <!-- ── SEGUIMIENTO ──────────────────────────────────────── -->
-    <div id="sec-seguimiento" class="section">
-      <div class="section-header"><h2>Seguimiento</h2></div>
-      <div id="seguimientoList"><div class="spinner"></div></div>
+    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="position:relative;flex:1;min-width:180px;">
+        <input id="waSearch3" class="search-box" placeholder="🔍 Buscar paciente..." oninput="filterWaPatients(3)" autocomplete="off" style="width:100%;box-sizing:border-box;">
+        <div id="waDropdown3" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;max-height:180px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+      </div>
+      <input type="hidden" id="waP3" value="">
+      <select id="waP3svc" class="search-box" style="width:auto;flex:0;" onchange="updateWa(3)"><option value="">Servicio...</option></select>
     </div>
+    <div class="wa-preview" id="waMsg3" contenteditable="false">Hola [Nombre]! &#10024;
 
-    <!-- ── PAGOS ────────────────────────────────────────────── -->
-    <div id="sec-pagos" class="section">
-      <div class="section-header">
-        <h2>Pagos</h2>
-        <button class="btn btn-primary btn-sm" onclick="openModal('nuevoPagoModal')">+ Nuevo registro</button>
-      </div>
-      <div class="toolbar" style="margin-bottom:10px">
-        <input class="search-input" placeholder="🔍 Buscar paciente o servicio..."
-          oninput="_pgSearch=this.value;renderPagos()">
-      </div>
-      <div class="pg-summary">
-        <span>Registros: <strong id="pgCount">—</strong></span>
-        <span>Total: <strong id="pgTotal">—</strong></span>
-        <span>Adelantos: <strong id="pgAdelanto">—</strong></span>
-      </div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Fecha</th><th>Paciente</th><th>Servicio</th><th>Atendió</th>
-              <th>Total</th><th>Adelanto</th><th>Notas</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="pagosBody"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
-        </table>
+Hoy es tu sesion de *[Servicio]* en *Elle Studio*! ⭐
+
+Av. Paz Soldan 235, San Isidro, Lima, Peru
+https://maps.google.com/?q=-12.0977,-77.0365
+
+Recuerda:
+- Zona limpia y sin cremas
+- Ropa comoda
+- Hidratate bien
+
+Te esperamos hoy! &#10024;</div>
+    <div id="waEdit3" style="display:none;margin-top:8px;">
+      <textarea id="waTpl3" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:10px;font-family:inherit;font-size:0.85rem;resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+        <button class="btn btn-primary" style="font-size:0.75rem;" onclick="saveWaTpl(3)">💾 Guardar</button>
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="cancelEditWa(3)">✕ Cancelar</button>
+        <button class="btn" style="font-size:0.75rem;background:#f8f4f0;border:1px solid var(--border);color:var(--text-light);" onclick="resetWaTpl(3)">↺ Restaurar original</button>
       </div>
     </div>
-
-  </main>
-</div><!-- /app -->
-
-<!-- ────────────────────────────────────────────────────────── -->
-<!-- MODALES                                                    -->
-<!-- ────────────────────────────────────────────────────────── -->
-
-<!-- Detalle paciente -->
-<div id="pacienteModal" class="modal-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="detNombre">—</h3>
-      <button class="modal-close" onclick="closeModal('pacienteModal')">✕</button>
+    <div class="wa-actions"><button class="btn btn-green" onclick="sendWa(3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Enviar WhatsApp</button><button class="btn btn-secondary" onclick="copyWa(3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar</button></div>
+  </div>
+  <!-- TARJETAS PERSONALIZADAS -->
+  <div id="waCustomCards"></div>
+  </div>
+  <!-- AGREGAR NUEVO MENSAJE -->
+  <div style="margin-top:14px;">
+    <button class="btn btn-primary" onclick="openNewWaCard()" style="width:100%;border-radius:12px;padding:12px;">+ Nuevo mensaje personalizado</button>
+  </div>
+  <!-- MODAL NUEVO MENSAJE -->
+  <div id="waNewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;display:none;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:18px;padding:24px;max-width:500px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+      <h3 style="font-family:'Cormorant Garamond',serif;margin-bottom:14px;">✨ Nuevo mensaje personalizado</h3>
+      <div class="form-group"><label>Nombre / Título</label><input id="waNewTitle" class="search-box" placeholder="Ej: Seguimiento post-sesión..."></div>
+      <div class="form-group" style="margin-top:10px;"><label>Mensaje</label>
+        <textarea id="waNewBody" style="width:100%;min-height:130px;border-radius:10px;border:1px solid var(--border);padding:10px;font-family:inherit;font-size:0.85rem;resize:vertical;box-sizing:border-box;" placeholder="Hola [Nombre] 💕&#10;&#10;Tu mensaje aquí...&#10;&#10;Usa [Nombre], [Servicio], [Link], [Dirección]"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeNewWaCard()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNewWaCard()">💾 Guardar</button>
+      </div>
     </div>
-    <div class="modal-body">
-      <div style="display:flex;gap:20px;flex-wrap:wrap">
-        <div><div class="form-label">Teléfono</div><div id="detTelefono"></div></div>
-        <div><div class="form-label">Desde</div><div id="detInicio"></div></div>
+  </div>
+</div>
+<!-- MODAL PLANTILLAS POR SERVICIO -->
+<div id="waSvcTplModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:18px;padding:24px;max-width:520px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.15);max-height:85vh;overflow-y:auto;">
+    <h3 style="font-family:'Cormorant Garamond',serif;margin-bottom:6px;">⚙️ Plantillas por servicio</h3>
+    <div style="font-size:0.78rem;color:var(--text-light);margin-bottom:14px;">Si un servicio tiene plantilla, se usa en vez del mensaje genérico. Variables: <strong>[Nombre]</strong>, <strong>[Servicio]</strong>, <strong>[Link]</strong>, <strong>[Dirección]</strong></div>
+    <div style="margin-bottom:12px;">
+      <select id="waSvcTplSelect" class="search-box" style="width:100%;" onchange="loadSvcTpl()"></select>
+    </div>
+    <textarea id="waSvcTplBody" style="width:100%;min-height:160px;border-radius:10px;border:1px solid var(--border);padding:10px;font-family:inherit;font-size:0.85rem;resize:vertical;box-sizing:border-box;" placeholder="Escribe la plantilla para este servicio... Déjalo vacío para usar el mensaje genérico."></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="clearSvcTpl()">🗑 Borrar plantilla</button>
+      <button class="btn btn-secondary" onclick="closeWaSvcTplModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSvcTpl()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+<!-- PRECIOS -->
+<div class="section" id="sec-precios">
+<div class="section-header">
+  <h2>Lista de Precios · Elle Studio</h2>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <input type="text" id="preciosBuscar" class="search-box" placeholder="🔍 Buscar zona..." style="min-width:150px;" oninput="renderPrecios()">
+    <div id="preciosAdminBtns" style="display:none;gap:8px;">
+      <button class="btn btn-primary" onclick="openPrecioModal()">+ Nueva Zona</button>
+      <button class="btn btn-secondary" onclick="openServicioModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Servicios</button>
+    </div>
+  </div>
+</div>
+<div class="precios-tabs" id="preciosTabs"></div>
+<div id="preciosContent"></div>
+</div>
+
+<!-- MODAL NUEVA ZONA / EDITAR ZONA -->
+<div class="modal-overlay" id="precioModal" style="z-index:200000" onclick="if(event.target===this)closePrecioModal()">
+<div class="modal" style="max-width:580px;">
+  <div class="modal-header">
+    <h3 class="modal-title" id="precioModalTitle">Nueva Zona</h3>
+    <button class="modal-close" onclick="closePrecioModal()">×</button>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label class="form-label">Servicio</label>
+        <select id="pServicio" class="form-input" onchange="populatePCategoria('')"></select>
       </div>
       <div>
-        <div class="form-label" style="margin-bottom:8px">Servicios y zonas</div>
-        <div id="detServicios"></div>
+        <label class="form-label">Categoría</label>
+        <select id="pCategoria" class="form-input" onchange="toggleNewCat()">
+          <option value="__nueva__">+ Nueva categoría...</option>
+        </select>
+      </div>
+    </div>
+    <div id="pNuevaCatWrap" style="display:none;">
+      <label class="form-label">Nombre de la nueva categoría</label>
+      <input type="text" id="pNuevaCategoria" class="form-input" placeholder="Ej: Zonas Especiales">
+    </div>
+    <div>
+      <label class="form-label">Nombre de la zona / tratamiento</label>
+      <input type="text" id="pZona" class="form-input" placeholder="Ej: Glúteos completos">
+    </div>
+    <div style="background:var(--cream);border-radius:12px;padding:14px;">
+      <p style="font-size:0.72rem;color:var(--text-light);margin-bottom:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;">Precios en Soles (S/) — deja vacío si no aplica</p>
+      <div class="mprice-tabs">
+        <button class="mprice-tab active" onclick="switchMpriceTab('mujer',this)">👩 Mujer</button>
+        <button class="mprice-tab" onclick="switchMpriceTab('hombre',this)">👨 Hombre</button>
+      </div>
+      <div class="mprice-panel active" id="mpanel-mujer">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+          <div><label class="form-label" style="font-size:0.68rem;">1 Sesión</label><input type="number" id="pMSesion" class="form-input" placeholder="—" min="0" step="0.10"></div>
+          <div><label class="form-label" style="font-size:0.68rem;">Paquete ×3</label><input type="number" id="pMPaq3" class="form-input" placeholder="—" min="0" step="0.10"></div>
+          <div><label class="form-label" style="font-size:0.68rem;">Paquete ×6</label><input type="number" id="pMPaq6" class="form-input" placeholder="—" min="0" step="0.10"></div>
+        </div>
+      </div>
+      <div class="mprice-panel" id="mpanel-hombre">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+          <div><label class="form-label" style="font-size:0.68rem;">1 Sesión</label><input type="number" id="pHSesion" class="form-input" placeholder="—" min="0" step="0.10"></div>
+          <div><label class="form-label" style="font-size:0.68rem;">Paquete ×3</label><input type="number" id="pHPaq3" class="form-input" placeholder="—" min="0" step="0.10"></div>
+          <div><label class="form-label" style="font-size:0.68rem;">Paquete ×6</label><input type="number" id="pHPaq6" class="form-input" placeholder="—" min="0" step="0.10"></div>
+        </div>
+      </div>
+    </div>
+    <div id="pDeleteBtn" style="display:none;">
+      <button class="btn btn-danger" style="width:100%;" onclick="deletePrecioItem()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Eliminar esta zona</button>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closePrecioModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePrecioItem()">Guardar zona</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL GESTIONAR SERVICIOS -->
+<div class="modal-overlay" id="servicioModal" style="z-index:200000" onclick="if(event.target===this)closeServicioModal()">
+<div class="modal" style="max-width:420px;">
+  <div class="modal-header">
+    <h3 class="modal-title">Gestionar Servicios</h3>
+    <button class="modal-close" onclick="closeServicioModal()">×</button>
+  </div>
+  <div style="padding:20px;">
+    <p style="font-size:0.8rem;color:var(--text-light);margin-bottom:12px;">Los servicios aparecen como pestañas en la lista de precios.</p>
+    <div id="serviciosList" style="margin-bottom:14px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="nuevoServicioInput" class="form-input" placeholder="Ej: Faciales, Aparatología..." style="flex:1;">
+      <button class="btn btn-primary" onclick="addServicio()">+ Agregar</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL PROMOCION -->
+<div class="modal-overlay" id="promoModal" style="z-index:200000" onclick="if(event.target===this)closePromoModal()">
+<div class="modal" style="max-width:420px;">
+  <div class="modal-header">
+    <h3 class="modal-title" id="promoModalTitle">Nueva Promoción</h3>
+    <button class="modal-close" onclick="closePromoModal()">×</button>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+    <div>
+      <label class="form-label">Nombre de la promoción</label>
+      <input type="text" id="promoNombre" class="form-input" placeholder="Ej: Bikini + Entre piernas">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label class="form-label">Precio (S/)</label>
+        <input type="number" id="promoPrecio" class="form-input" placeholder="Opcional" min="0" step="0.10">
       </div>
       <div>
-        <div class="form-label">Comentarios</div>
-        <div id="detComentarios" style="font-size:0.88rem;color:var(--text-light)"></div>
+        <label class="form-label">Mes / Vigencia</label>
+        <input type="text" id="promoMes" class="form-input" placeholder="Ej: Enero">
+      </div>
+    </div>
+    <div id="promoDeleteBtn" style="display:none;">
+      <button class="btn btn-danger" style="width:100%;" onclick="deletePromo(_editPromoIdx)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Eliminar promoción</button>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closePromoModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePromo()">Guardar</button>
+    </div>
+  </div>
+</div>
+</div>
+<!-- PRE-CITAS -->
+<div class="section" id="sec-precitas">
+  <div class="section-header">
+    <h2>Pre-citas · Separaciones</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-secondary" onclick="openPcTemplateModal()" style="font-size:0.78rem;">✉️ Editar Mensaje WA</button>
+      <button class="btn btn-primary" onclick="openNewPreCita()">+ Nueva Pre-cita</button>
+    </div>
+  </div>
+
+  <!-- Filtros completos -->
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;background:white;border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+    <input class="search-box" id="pcSearch" placeholder="🔍 Buscar por nombre..." oninput="renderPreCitas()" style="flex:1;min-width:160px;max-width:220px;">
+    <select id="pcFilterEstado" class="search-box" style="flex:0;width:auto;" onchange="renderPreCitas()">
+      <option value="">Todos los estados</option>
+      <option value="pendiente">⏳ Pendiente</option>
+      <option value="confirmada">✅ Confirmada</option>
+      <option value="cancelada">❌ Cancelada</option>
+    </select>
+    <select id="pcFilterServicio" class="search-box" style="flex:0;width:auto;" onchange="renderPreCitas()">
+      <option value="">Todos los servicios</option>
+    </select>
+    <select id="pcTipoFecha" class="search-box" style="flex:0;width:auto;" onchange="renderPreCitas()" title="Qué fecha filtrar">
+      <option value="tentativa">📅 Fecha de cita</option>
+      <option value="creacion">📝 Fecha de registro</option>
+    </select>
+    <input type="date" id="pcFechaDesde" class="search-box" style="flex:0;width:auto;" onchange="renderPreCitas()" title="Desde">
+    <span style="color:var(--text-light);font-size:0.8rem;">hasta</span>
+    <input type="date" id="pcFechaHasta" class="search-box" style="flex:0;width:auto;" onchange="renderPreCitas()" title="Hasta">
+    <select id="pcFilterMes" class="search-box" style="flex:0;width:auto;" onchange="renderPreCitas()">
+      <option value="">Todos los meses</option>
+    </select>
+    <button class="btn btn-secondary" style="padding:8px 12px;font-size:0.78rem;" onclick="pcLimpiarFiltros()">✕ Limpiar</button>
+  </div>
+  <!-- Chips de filtros rápidos -->
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;" id="pcQuickChips">
+    <button onclick="pcQuickFilter('hoy')" class="btn btn-secondary" style="font-size:0.78rem;padding:6px 12px;" id="pcChip-hoy">📝 Registradas hoy</button>
+    <button onclick="pcQuickFilter('ayer')" class="btn btn-secondary" style="font-size:0.78rem;padding:6px 12px;" id="pcChip-ayer">📝 Ayer</button>
+    <button onclick="pcQuickFilter('semana')" class="btn btn-secondary" style="font-size:0.78rem;padding:6px 12px;" id="pcChip-semana">📝 Esta semana</button>
+    <button onclick="pcQuickFilter('citaHoy')" class="btn btn-secondary" style="font-size:0.78rem;padding:6px 12px;" id="pcChip-citaHoy">📅 Citas hoy</button>
+    <button onclick="pcQuickFilter('citaSemana')" class="btn btn-secondary" style="font-size:0.78rem;padding:6px 12px;" id="pcChip-citaSemana">📅 Citas esta semana</button>
+  </div>
+
+  <!-- Stats pre-citas -->
+  <div class="finance-summary" id="pcStats"></div>
+
+  <!-- Lista de pre-citas -->
+  <div id="pcList"><div class="empty-state"><span>📋</span>Sin pre-citas registradas.</div></div>
+</div>
+
+<!-- MODAL PLANTILLAS WA PRE-CITA -->
+<div id="pcTemplateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:18px;padding:24px;max-width:520px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto;">
+    <h3 style="font-family:'Cormorant Garamond',serif;margin-bottom:14px;">✉️ Mensajes WhatsApp · Pre-citas</h3>
+    <div style="margin-bottom:12px;font-size:0.78rem;color:var(--text-light);">Variables: <strong>[Nombre]</strong>, <strong>[Servicio]</strong>, <strong>[Link]</strong></div>
+    <div style="display:flex;gap:4px;margin-bottom:14px;" id="pcTplTabs">
+      <button class="btn btn-primary" style="font-size:0.75rem;padding:6px 12px;" onclick="switchPcTab('confirmacion')" id="pcTab-confirmacion">Confirmación</button>
+      <button class="btn btn-secondary" style="font-size:0.75rem;padding:6px 12px;" onclick="switchPcTab('dia_antes')" id="pcTab-dia_antes">1 día antes</button>
+      <button class="btn btn-secondary" style="font-size:0.75rem;padding:6px 12px;" onclick="switchPcTab('mismo_dia')" id="pcTab-mismo_dia">Mismo día</button>
+    </div>
+    <textarea id="pcTemplateBody" style="width:100%;min-height:180px;border-radius:10px;border:1px solid var(--border);padding:10px;font-family:inherit;font-size:0.85rem;resize:vertical;box-sizing:border-box;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="resetPcTemplate()">🔄 Restaurar</button>
+      <button class="btn btn-secondary" onclick="closePcTemplateModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePcTemplates()">💾 Guardar todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGOS -->
+<div class="section" id="sec-pagos">
+  <div class="section-header">
+    <h2>Pagos & Finanzas</h2>
+    <button class="btn btn-primary" onclick="openNuevoRegistro()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nuevo Registro</button>
+  </div>
+
+  <!-- Filtros -->
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;">
+    <input class="search-box" id="pgSearch" placeholder="🔍 Paciente..." oninput="renderPagos()" style="flex:1;min-width:140px;max-width:200px;">
+    <input type="date" id="pgFechaDesde" class="search-box" style="flex:0;width:auto;" onchange="renderPagos()" title="Desde">
+    <span style="color:var(--text-light);font-size:0.8rem;">hasta</span>
+    <input type="date" id="pgFechaHasta" class="search-box" style="flex:0;width:auto;" onchange="renderPagos()" title="Hasta">
+    <select id="pgFilterMes" class="search-box" style="flex:0;width:auto;" onchange="renderPagos()">
+      <option value="">Todos los meses</option>
+    </select>
+    <select id="pgFilterAtendio" class="search-box" style="flex:0;width:auto;" onchange="renderPagos()">
+      <option value="">Quien atendió</option>
+    </select>
+    <select id="pgFilterSvc" class="search-box" style="flex:0;width:auto;" onchange="renderPagos()">
+      <option value="">Todos los servicios</option>
+    </select>
+    <button class="btn btn-secondary" style="padding:8px 12px;font-size:0.78rem;" onclick="pgLimpiarFiltros()">✕ Limpiar</button>
+  </div>
+
+  <!-- Resumen financiero (refleja filtros activos) -->
+  <div class="finance-summary" id="pgSummary"></div>
+
+  <!-- Tabla estilo Excel -->
+  <div class="table-container" style="overflow-x:auto;">
+    <table class="main-table" id="pgTable">
+      <thead>
+        <tr>
+          <th style="cursor:pointer;" onclick="pgSort('fecha')">Fecha <span id="pgSortFecha">↓</span></th>
+          <th style="cursor:pointer;" onclick="pgSort('nombre')">Nombre y apellido <span id="pgSortNombre"></span></th>
+          <th style="cursor:pointer;" onclick="pgSort('servicio')">Servicio <span id="pgSortServicio"></span></th>
+          <th>Zonas / Comentarios</th>
+          <th style="cursor:pointer;" onclick="pgSort('atendio')">Quien atendió <span id="pgSortAtendio"></span></th>
+          <th style="cursor:pointer;" onclick="pgSort('total')">Total S/ <span id="pgSortTotal"></span></th>
+          <th>Adelanto S/</th>
+          <th>Comisión S/</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="pgBody"></tbody>
+      <tfoot id="pgFoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<!-- MODAL NUEVA CITA DEL DÍA -->
+<!-- MODAL PRÓXIMA SESIÓN (reagendar/confirmar) -->
+<div id="proximaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeProximaModal()">
+  <div style="background:white;border-radius:16px;padding:24px;max-width:440px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <h3 style="font-family:'Cormorant Garamond',serif;margin:0 0 12px;color:var(--rose-dark);">📆 Próxima sesión</h3>
+    <div id="proxInfo" style="font-size:0.88rem;margin-bottom:18px;padding:12px 14px;background:#faf5f0;border-radius:10px;"></div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;">Cambiar frecuencia (días)</label>
+      <input type="number" id="proxFrecInput" min="0" max="365" placeholder="Ej: 21" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:0.92rem;">
+      <div style="font-size:0.72rem;color:var(--text-light);margin-top:4px;">Dejar vacío para usar la frecuencia del servicio</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="closeProximaModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="proxAction('wa')">📱 WhatsApp</button>
+      <button class="btn btn-primary" onclick="proxAction('guardar')">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP DETALLE DE EVENTO (estilo Google Calendar) -->
+<div id="evtPopup" style="display:none;position:fixed;inset:0;background:rgba(45,31,28,0.4);z-index:300000;backdrop-filter:blur(3px);align-items:center;justify-content:center;" onclick="if(event.target===this)closeEvtPopup()">
+  <div style="background:white;border-radius:14px;padding:0;max-width:420px;width:92%;box-shadow:0 24px 60px rgba(0,0,0,0.2);overflow:hidden;">
+    <div id="evtPopupHeader" style="padding:20px 22px 14px;position:relative;">
+      <button onclick="closeEvtPopup()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;color:var(--text-light);cursor:pointer;padding:4px 8px;line-height:1;">×</button>
+      <div id="evtPopupDotTitle" style="display:flex;align-items:flex-start;gap:12px;"></div>
+    </div>
+    <div id="evtPopupBody" style="padding:0 22px 22px;"></div>
+    <div id="evtPopupActions" style="padding:12px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:#fafafa;"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="nuevaCitaModal" style="z-index:200000">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h2>Agregar Cita</h2>
+      <button class="close-btn" onclick="closeModal('nuevaCitaModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.83rem;color:var(--text-light);margin-bottom:12px;">Ingresa una cita para cualquier día.</p>
+
+      <!-- Selector de origen -->
+      <div style="background:#faf6f0;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:8px;">¿De dónde viene la cita?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button type="button" id="ncOrigNuevo" onclick="_ncSwitchOrigen('nuevo')" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--sage);background:var(--sage-light);color:var(--sage-dark);font-weight:600;cursor:pointer;font-size:0.82rem;">✏️ Nuevo</button>
+          <button type="button" id="ncOrigPac" onclick="_ncSwitchOrigen('paciente')" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;color:var(--text);cursor:pointer;font-size:0.82rem;">👤 Paciente existente</button>
+          <button type="button" id="ncOrigPc" onclick="_ncSwitchOrigen('precita')" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;color:var(--text);cursor:pointer;font-size:0.82rem;">📋 Pre-cita</button>
+        </div>
+        <!-- Buscador (solo si paciente o pre-cita) -->
+        <div id="ncSearchBox" style="display:none;margin-top:10px;position:relative;">
+          <input id="ncSearchInput" placeholder="🔍 Buscar..." oninput="_ncSearch(this.value)" style="width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:0.85rem;background:white;">
+          <div id="ncSearchDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:9px;margin-top:4px;max-height:240px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+        </div>
+        <!-- Tarjeta de seleccionado -->
+        <div id="ncSelCard" style="display:none;margin-top:10px;padding:9px 12px;background:#e6f4ea;border:1px solid #a8d5b5;border-radius:9px;font-size:0.82rem;color:#2e7d32;">
+          <span id="ncSelCardInfo"></span>
+          <button type="button" onclick="_ncClearSel()" style="margin-left:8px;background:none;border:none;color:#2e7d32;cursor:pointer;font-weight:600;">✕ Quitar</button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="ncFecha" onchange="checkNcConflict()">
+        </div>
+        <div class="form-group">
+          <label>Hora *</label>
+          <input type="time" id="ncHora" onchange="checkNcConflict()">
+        </div>
+        <div class="form-group full">
+          <label>Cubículo</label>
+          <select id="ncCubiculo" onchange="checkNcConflict()">
+            <option value="01">Cubículo 01 · Láser</option>
+            <option value="02">Cubículo 02 · Tratamientos</option>
+            <option value="03">Cubículo 03 · Tratamientos</option>
+          </select>
+          <div id="ncConflictAlert" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;font-size:0.82rem;"></div>
+        </div>
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input id="ncNombre" placeholder="Nombre">
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input id="ncApellido" placeholder="Apellido">
+        </div>
+        <div class="form-group full">
+          <label>📱 WhatsApp / Teléfono</label>
+          <input id="ncTelefono" placeholder="Ej: 999 888 777" type="tel" inputmode="tel">
+        </div>
+        <div class="form-group full">
+          <label>Servicio / Zona</label>
+          <input id="ncServicio" placeholder="ej: Depilación Láser · Piernas completas">
+        </div>
+        <div class="form-group full">
+          <label>Notas</label>
+          <input id="ncNotas" placeholder="Observaciones...">
+        </div>
+      </div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+        <button class="btn btn-secondary" onclick="closeModal('nuevaCitaModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNuevaCita()">💾 Guardar cita</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Nueva paciente -->
-<div id="nuevoPacienteModal" class="modal-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Nueva Paciente</h3>
-      <button class="modal-close" onclick="closeModal('nuevoPacienteModal')">✕</button>
-    </div>
+<!-- MODAL NUEVA PACIENTE -->
+<div class="modal-overlay" id="newPatientModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header"><h2>✦ Nueva Paciente</h2><button class="close-btn" onclick="closeModal('newPatientModal')">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">Nombre *</label><input id="npNombre" class="input" placeholder="Nombre"></div>
-      <div class="form-group"><label class="form-label">Apellido</label><input id="npApellido" class="input" placeholder="Apellido"></div>
-      <div class="form-group"><label class="form-label">Teléfono</label><input id="npTelefono" class="input" placeholder="+51 999 999 999"></div>
+
+      <!-- PASO 1: Buscar pre-cita -->
+      <div style="background:linear-gradient(135deg,#fffbef,#fff8dc);border:1px solid #f0d080;border-radius:13px;padding:14px 16px;margin-bottom:18px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:#7a5200;margin-bottom:8px;">¿Viene con pre-cita? Búscala para cargar sus datos automáticamente</div>
+        <div style="position:relative;">
+          <input id="npPcSearch" class="search-box" placeholder="🔍 Escribe nombre o apellido de la pre-cita..." oninput="searchPcForPatient(this.value)" style="width:100%;background:white;">
+          <div id="npPcDrop" style="position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.1);z-index:400;display:none;max-height:180px;overflow-y:auto;margin-top:3px;"></div>
+        </div>
+        <!-- Tarjeta de pre-cita seleccionada -->
+        <div id="npPcCard" style="display:none;margin-top:10px;background:white;border-radius:10px;border:1.5px solid var(--green);padding:10px 14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div id="npPcCardInfo" style="font-size:0.83rem;line-height:1.6;"></div>
+            <button onclick="clearNpPc()" style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:1.1rem;flex-shrink:0;padding:0 2px;">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: Datos de la paciente -->
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--rose-dark);margin-bottom:10px;">Datos de la paciente</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input id="nNombre" placeholder="Nombre"></div>
+        <div class="form-group"><label>Apellido *</label><input id="nApellido" placeholder="Apellido"></div>
+        <div class="form-group"><label>Teléfono / WhatsApp</label><input id="nTel" placeholder="+51 9..."></div>
+        <div class="form-group"><label>Fecha de primera cita</label><input type="date" id="nFecha"></div>
+        <div class="form-group full"><label>Comentarios generales</label><textarea id="nComentarios" placeholder="Observaciones, restricciones..."></textarea></div>
+      </div>
+
+      <!-- PASO 3: Pago del día -->
+      <div style="background:linear-gradient(135deg,#edf7ee,#f5fbf5);border:1px solid #a5d6b0;border-radius:13px;padding:14px 16px;margin-top:16px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:#2e7d32;margin-bottom:10px;">Pago del día</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Separación ya abonada (S/)</label>
+            <input type="number" id="nSeparacion" placeholder="0.00" min="0" step="0.50" oninput="calcNpSaldo()" style="background:#fffef8;border-color:#f0d080;">
+            <span style="font-size:0.71rem;color:var(--text-light);margin-top:2px;">Viene de la pre-cita si la jalaste</span>
+          </div>
+          <div class="form-group">
+            <label>Precio total del servicio (S/)</label>
+            <input type="number" id="nPrecioTotal" placeholder="0.00" min="0" step="0.50" oninput="calcNpSaldo()">
+          </div>
+          <div class="form-group">
+            <label>Abono adicional hoy (S/)</label>
+            <input type="number" id="nAbonoHoy" placeholder="0.00" min="0" step="0.50" oninput="calcNpSaldo()">
+            <span style="font-size:0.71rem;color:var(--text-light);margin-top:2px;">Lo que paga al recibir el servicio</span>
+          </div>
+          <div class="form-group">
+            <label>Saldo pendiente (calculado)</label>
+            <input type="text" id="nSaldoCalc" readonly placeholder="S/ 0.00" style="background:var(--cream);font-weight:700;font-size:0.95rem;color:var(--rose-dark);cursor:default;">
+          </div>
+        </div>
+        <div id="nResumenPago" style="margin-top:10px;font-size:0.8rem;color:var(--text-light);display:none;"></div>
+      </div>
+
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+        <button class="btn btn-secondary" onclick="closeModal('newPatientModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNewPatient()">💾 Guardar y agregar servicios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PACIENTE -->
+<div class="modal-overlay" id="editPatientModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Editar Paciente</h2><button class="close-btn" onclick="closeModal('editPatientModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input id="eNombre" placeholder="Nombre"></div>
+        <div class="form-group"><label>Apellido *</label><input id="eApellido" placeholder="Apellido"></div>
+        <div class="form-group"><label>Teléfono / WhatsApp</label><input id="eTel" placeholder="+51 9..."></div>
+        <div class="form-group"><label>Fecha de Inicio</label><input type="date" id="eFecha"></div>
+        <div class="form-group full"><label>Comentarios generales</label><textarea id="eComentarios" placeholder="Observaciones..."></textarea></div>
+      </div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+        <button class="btn btn-danger" style="margin-right:auto;padding:9px 16px;" onclick="confirmDeletePatient()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Eliminar paciente</button>
+        <button class="btn btn-secondary" onclick="closeModal('editPatientModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditPatient()">💾 Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGREGAR SERVICIO A PACIENTE -->
+<!-- MODAL NUEVO / EDITAR PAQUETE -->
+<div id="paqModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300000;align-items:center;justify-content:center;" onclick="if(event.target===this)closePaqueteModal()">
+  <div style="background:white;border-radius:16px;padding:26px;max-width:500px;width:94%;box-shadow:0 24px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    <h3 id="paqModalTitle" style="font-family:'Cormorant Garamond',serif;margin:0 0 16px;color:var(--rose-dark);font-size:1.3rem;">📦 Nuevo Paquete</h3>
+    <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
-        <label class="form-label">Servicio *</label>
-        <select id="npServicio" class="select">
-          <option value="">Seleccionar...</option>
-          <option>Depilación Láser</option>
-          <option>GlúTeos De Porcelana</option>
-          <option>Body Porcelana</option>
-          <option>Glúteos de Porcelana</option>
-          <option>Sculpt Body</option>
-          <option>Slimbody</option>
-          <option>Productos (Ventas)</option>
-        </select>
+        <label>Número de paquete</label>
+        <input type="number" id="paqNum" min="1" class="form-input" style="width:100%;">
       </div>
       <div class="form-group">
-        <label class="form-label">Cubículo</label>
-        <select id="npCubiculo" class="select">
-          <option value="">—</option>
-          <option value="Cub. 01">Cub. 01</option>
-          <option value="Cub. 02">Cub. 02</option>
-        </select>
+        <label>Nº de sesiones *</label>
+        <input type="number" id="paqTamano" min="1" max="20" placeholder="Ej: 3" class="form-input" style="width:100%;">
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeModal('nuevoPacienteModal')">Cancelar</button>
-        <button class="btn btn-primary" onclick="guardarNuevoPaciente()">Guardar</button>
+      <div class="form-group">
+        <label>Fecha de compra</label>
+        <input type="date" id="paqFechaCompra" class="form-input" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Precio total (S/)</label>
+        <input type="number" id="paqPrecio" min="0" step="0.01" placeholder="0.00" class="form-input" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Separación (S/)</label>
+        <input type="number" id="paqSeparacion" min="0" step="0.01" placeholder="0.00" class="form-input" style="width:100%;">
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label>Notas</label>
+        <textarea id="paqNotas" placeholder="Observaciones del paquete..." style="width:100%;min-height:60px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.88rem;resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div id="paqAsignarBox" style="display:none;margin-top:14px;padding:12px 14px;background:#fff8e7;border-left:3px solid #c47a00;border-radius:8px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;">
+        <input type="checkbox" id="paqAsignarSueltas" checked>
+        <span>Asignar <strong id="paqAsignarCount">0</strong> sesiones sueltas a este paquete</span>
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;">
+      <button class="btn btn-secondary" onclick="closePaqueteModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePaquete()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR FRECUENCIA DEL PLAN -->
+<div id="planFrecModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300000;align-items:center;justify-content:center;" onclick="if(event.target===this)closePlanFrecModal()">
+  <div style="background:white;border-radius:16px;padding:26px;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <h3 style="font-family:'Cormorant Garamond',serif;margin:0 0 8px;color:var(--rose-dark);">📆 Frecuencia del plan</h3>
+    <p id="planFrecInfo" style="font-size:0.82rem;color:var(--text-light);margin-bottom:18px;"></p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;" id="planFrecBtns"></div>
+    <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <input type="number" id="planFrecCustom" min="1" max="365" placeholder="Personalizado" style="width:140px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;" oninput="_planFrecCustom(this)">
+      <span style="font-size:0.78rem;color:var(--text-light);">días</span>
+    </div>
+    <div id="planFrecLaserLock" style="display:none;padding:10px 14px;background:var(--gold-light);color:var(--gold);border-radius:8px;font-size:0.8rem;margin-bottom:14px;">🔒 Depilación Láser siempre es cada 21 días</div>
+    <div style="display:flex;gap:8px;justify-content:space-between;">
+      <button class="btn btn-secondary" style="color:var(--red);border-color:#f0c0c0;" onclick="_planFrecClear()">🗑 Quitar plan</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" onclick="closePlanFrecModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="_planFrecSave()">💾 Guardar</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Nuevo pago -->
-<div id="nuevoPagoModal" class="modal-overlay">
+<div class="modal-overlay" id="addSvcModal" style="z-index:200000">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>✦ Agregar Servicio</h2><button class="close-btn" onclick="closeModal('addSvcModal')">✕</button></div>
+    <div class="modal-body">
+      <!-- Banner de pago inicial si viene del flujo nueva paciente -->
+      <div id="asSvcPagoInfo" style="display:none;margin-bottom:14px;padding:12px 14px;background:linear-gradient(135deg,#edf7ee,#f5fbf5);border-radius:10px;border:1px solid #a5d6b0;font-size:0.83rem;line-height:1.6;color:#1e5c28;"></div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Servicio *</label><select id="asSvc"><option value="">Seleccionar...</option></select></div>
+        <div class="form-group full">
+          <label>Cubículo *</label>
+          <select id="asCubiculo">
+            <option value="01">Cubículo 01 · Depilación Láser (Google Calendar)</option>
+            <option value="02">Cubículo 02 · Tratamientos (Cal.com)</option>
+            <option value="03">Cubículo 03 · Tratamientos (Cal.com)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Plan</label><select id="asPlan"><option>Sesión</option><option>Paquete</option></select></div>
+        <div class="form-group"><label>Fecha inicio</label><input type="date" id="asFecha"></div>
+        <div class="form-group full">
+          <label>Frecuencia del plan <span style="font-size:0.7rem;color:var(--text-light);font-weight:400;">(cada cuánto viene)</span></label>
+          <select id="asFrecuenciaPlan" onchange="_asFrecPlanCheck()"></select>
+          <input type="number" id="asFrecuenciaCustom" min="1" max="365" placeholder="Nº de días" style="display:none;margin-top:8px;width:160px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;">
+          <div id="asFrecInfo" style="display:none;margin-top:8px;padding:8px 12px;background:var(--sage-light);color:var(--sage-dark);border-radius:8px;font-size:0.78rem;"></div>
+        </div>
+        <div class="form-group full"><label>Comentarios del servicio</label><textarea id="asComentarios" placeholder="Notas específicas del tratamiento..."></textarea></div>
+      </div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+        <button class="btn btn-secondary" onclick="closeModal('addSvcModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNewSvc()">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE PACIENTE -->
+<div class="modal-overlay" id="patientDetailModal">
   <div class="modal">
+    <div class="modal-header"><h2 id="detailTitle">Ficha de Paciente</h2><button class="close-btn" onclick="closeModal('patientDetailModal')">✕</button></div>
+    <div class="modal-body">
+      <!-- Cabecera paciente -->
+      <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--rose-light),var(--gold-light));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:var(--rose-dark);flex-shrink:0;" id="dAvatar"></div>
+        <div style="flex:1;min-width:140px;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;" id="dName"></div>
+          <div style="color:var(--text-light);font-size:0.79rem;margin-top:4px;" id="dInfo"></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;">
+          <button class="btn btn-secondary" style="font-size:0.82rem;flex:1;min-width:120px;justify-content:center;" onclick="openEditFromDetail()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
+          <button class="btn btn-primary" style="font-size:0.82rem;flex:1;min-width:120px;justify-content:center;" onclick="openAddSvcModal()">+ Servicio</button>
+          <button class="btn btn-primary" style="font-size:0.82rem;flex:1;min-width:140px;justify-content:center;background:linear-gradient(135deg,#5a7a3a,#2d4020);" onclick="openPagoDesdeDetalle()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2m-4-7h8M8 13h8"/></svg> Registrar Pago</button>
+          <button class="btn btn-secondary" style="font-size:0.82rem;flex:1;min-width:140px;justify-content:center;" id="btnConsentimiento" onclick="openConsentModal(currentPid)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Consentimiento</button>
+        </div>
+      </div>
+      <!-- TABS DE SERVICIOS -->
+      <div class="svc-tabs-row" id="svcTabsRow"></div>
+      <!-- PANEL POR SERVICIO -->
+      <div id="svcPanelsContainer"></div>
+      <!-- FOTOS (global) -->
+      <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;">📷 Fotos Antes / Después</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" style="font-size:0.8rem;padding:8px 14px;" onclick="openCameraCapture()">📸 Cámara</button>
+            <button class="btn btn-secondary" style="font-size:0.8rem;padding:8px 14px;" onclick="document.getElementById('photoInput').click()">🖼 Galería</button>
+          </div>
+        </div>
+        <div class="photo-grid" id="photoGrid"></div>
+      </div>
+      <!-- BARRA GUARDAR sticky -->
+      <div style="position:sticky;bottom:0;background:white;padding:14px 0 2px;border-top:1px solid var(--border);margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:10;">
+        <span id="detailSaveMsg" style="font-size:0.78rem;color:var(--green);opacity:0;transition:opacity 0.4s;font-family:'DM Sans',sans-serif;">✅ Cambios guardados</span>
+        <button class="btn btn-primary" style="min-width:140px;" onclick="saveDetailChanges()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Inputs de archivo fuera del modal para compatibilidad iOS -->
+<input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(event)" multiple>
+<input type="file" id="cameraInputCapture" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+<input type="file" id="cameraInputFile" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+
+<!-- Modal selector camara (fuera del patientDetailModal para que position:fixed funcione correctamente en iOS) -->
+<div id="photoSourceModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:300000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closePhotoSourceModal()">
+  <div style="background:white;border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:500px;animation:slideUp 0.25s ease;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#3d4f30;margin-bottom:18px;text-align:center;">&#128247; Agregar foto</div>
+    <button onclick="triggerCameraCapture()" style="width:100%;padding:16px;margin-bottom:10px;border-radius:14px;border:none;background:linear-gradient(135deg,#7a8c6a,#3d4f30);color:white;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;">
+      &#128248; Tomar foto ahora
+    </button>
+    <button onclick="triggerGalleryPick()" style="width:100%;padding:16px;margin-bottom:10px;border-radius:14px;border:1.5px solid #ddd8c8;background:white;color:#3d4f30;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;">
+      &#128444; Elegir de la galería
+    </button>
+    <button onclick="closePhotoSourceModal()" style="width:100%;padding:14px;border-radius:14px;border:none;background:#f5f2ec;color:#6b6b52;font-family:'DM Sans',sans-serif;font-size:0.9rem;cursor:pointer;min-height:50px;">
+      Cancelar
+    </button>
+  </div>
+</div>
+
+
+<!-- MODAL CONSENTIMIENTO -->
+<div class="modal-overlay" id="consentModal" style="z-index:200000">
+  <div class="modal" style="max-width:680px;">
     <div class="modal-header">
-      <h3>Registrar Pago</h3>
-      <button class="modal-close" onclick="closeModal('nuevoPagoModal')">✕</button>
+      <div>
+        <h2>📋 Consentimiento Informado</h2>
+        <div id="consentPatientName" style="font-size:0.78rem;color:var(--gold-light);margin-top:2px;"></div>
+      </div>
+      <button class="close-btn" onclick="closeModal('consentModal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px;">
+
+      <!-- Estado del consentimiento -->
+      <div id="consentStatusBar" style="margin-bottom:16px;"></div>
+
+      <!-- Selector de tipo de consentimiento -->
+      <div id="consentTypeSelector" style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <button onclick="selectConsentType('laser')" id="btnConsentLaser" style="flex:1;min-width:120px;padding:10px 14px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;">💉 Láser</button>
+        <button onclick="selectConsentType('body')" id="btnConsentBody" style="flex:1;min-width:120px;padding:10px 14px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;">✨ Body</button>
+      </div>
+
+      <!-- Texto del consentimiento -->
+      <div class="consent-text" style="max-height:340px;overflow-y:auto;padding:16px;background:var(--warm-white);border-radius:12px;border:1px solid var(--border);margin-bottom:20px;" id="consentTextBody">
+        <!-- Se renderiza dinámicamente -->
+      </div>
+
+      <!-- Firma -->
+      <div id="consentSignSection">
+        <div style="margin-bottom:8px;font-size:0.85rem;font-weight:600;color:var(--text);">✍️ Firma del Paciente</div>
+        <div style="font-size:0.75rem;color:var(--text-light);margin-bottom:10px;">Firmar con el dedo en el área de abajo</div>
+        <canvas id="consentCanvas" width="600" height="180" style="width:100%;height:180px;"></canvas>
+        <div style="display:flex;gap:10px;margin-top:10px;justify-content:space-between;align-items:center;">
+          <button onclick="clearConsentCanvas()" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text-light);font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">🗑 Limpiar</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="printConsent()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">🖨 Imprimir</button>
+            <button onclick="saveConsent()" style="padding:8px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#7a8c6a,#3d4f30);color:white;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">💾 Guardar Firma</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista firma guardada -->
+      <div id="consentViewSection" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div style="font-size:0.85rem;font-weight:600;color:#2e7d32;">✅ Consentimiento firmado</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="downloadConsent()" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">⬇️ Descargar PDF</button>
+            <button onclick="printConsent()" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;">🖨 Imprimir</button>
+            <button onclick="resetConsentForResign()" style="padding:7px 14px;border-radius:8px;border:1px solid var(--red);background:white;color:var(--red);font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;">↺ Firmar de nuevo</button>
+          </div>
+        </div>
+        <img id="consentFirmaImg" style="width:100%;max-height:180px;object-fit:contain;border:1px solid var(--border);border-radius:10px;background:white;padding:10px;" src="" alt="Firma">
+        <div style="font-size:0.72rem;color:var(--text-light);margin-top:6px;text-align:right;" id="consentFechaGuardada"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Área de impresión de consentimiento (invisible) -->
+<div id="printConsentArea"></div>
+
+<!-- MODAL NUEVA ZONA -->
+<div class="modal-overlay" id="addZoneModal" style="z-index:200000">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>✦ Nueva Zona</h2><button class="close-btn" onclick="closeModal('addZoneModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nombre de la Zona *</label><input id="newZoneName" placeholder="ej: Piernas completas, Axilas, Glúteos..."></div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+        <button class="btn btn-secondary" onclick="closeModal('addZoneModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNewZone()">Agregar Zona</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA SESIÓN CON FRECUENCIA -->
+<div class="modal-overlay" id="addSesModal" style="z-index:200000">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>✦ Nueva Sesión</h2><button class="close-btn" onclick="closeModal('addSesModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Fecha de la sesión</label>
+        <input type="date" id="sesFecha" style="width:100%;" oninput="(function(){const a=document.querySelector('.freq-btn.freq-active'),c=document.getElementById('sesFrecCustom');let d=parseInt(c&&c.value>0?c.value:(a?a.dataset.dias:21));updateFrecPreview(d);})()">
+      </div>
+      <!-- Banner con frecuencia del plan (info) + link para override -->
+      <div id="sesFrecBanner" style="margin-top:14px;padding:12px 14px;background:var(--sage-light);border-radius:10px;font-size:0.85rem;color:var(--sage-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div id="sesFrecBannerText">✨ Usará la frecuencia del plan</div>
+        <a onclick="_toggleFrecOverride()" style="font-size:0.75rem;color:var(--rose-dark);cursor:pointer;text-decoration:underline;white-space:nowrap;">✏ Cambiar esta vez</a>
+      </div>
+      <!-- Selector de frecuencia (oculto por defecto) -->
+      <div class="form-group" id="sesFrecOverride" style="margin-top:14px;display:none;">
+        <label style="margin-bottom:8px;display:block;">Frecuencia solo para esta sesión</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="sesFrecBtns">
+          <button type="button" class="freq-btn" data-dias="3" onclick="selFrec(this)">2x sem <span style="font-size:0.7rem;opacity:0.7;">3d</span></button>
+          <button type="button" class="freq-btn" data-dias="7" onclick="selFrec(this)">Semanal <span style="font-size:0.7rem;opacity:0.7;">7d</span></button>
+          <button type="button" class="freq-btn" data-dias="14" onclick="selFrec(this)">Quincenal <span style="font-size:0.7rem;opacity:0.7;">14d</span></button>
+          <button type="button" class="freq-btn freq-active" data-dias="21" onclick="selFrec(this)">21 días</button>
+          <button type="button" class="freq-btn" data-dias="30" onclick="selFrec(this)">Mensual <span style="font-size:0.7rem;opacity:0.7;">30d</span></button>
+          <button type="button" class="freq-btn" data-dias="0" onclick="selFrec(this)">Sin recordatorio</button>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+          <input type="number" id="sesFrecCustom" min="1" max="365" placeholder="Otro nº de días" style="width:150px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;" oninput="selFrecCustom(this)">
+          <span style="font-size:0.8rem;color:var(--text-light);">días personalizados</span>
+        </div>
+      </div>
+      <div id="sesFrecPreview" style="margin-top:10px;font-size:0.8rem;color:var(--sage-dark);padding:8px 12px;background:var(--sage-light);border-radius:8px;display:none;"></div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+        <button class="btn btn-secondary" onclick="closeModal('addSesModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNewSes()">Agregar Sesión</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURACIÓN -->
+<div class="modal-overlay" id="settingsModal" style="z-index:200000">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header"><h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Configuración de Elle Studio</h2><button class="close-btn" onclick="closeModal('settingsModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="margin-bottom:24px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:12px;color:var(--rose-dark);">🏢 Información del Estudio</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Nombre del Estudio</label><input id="cfg-name"></div>
+          <div class="form-group full"><label>Dirección</label><input id="cfg-address"></div>
+        </div>
+      </div>
+      <div style="margin-bottom:24px;padding-top:18px;border-top:1px solid var(--border);">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:12px;color:var(--rose-dark);">Links de Agenda por Cubículo</div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Cubículo 01 · Google Calendar (Láser)</label><input id="cfg-calLaser"></div>
+          <div class="form-group full"><label>Cubículo 02 · Cal.com (Tratamientos)</label><input id="cfg-calOtros"></div>
+          <div class="form-group full"><label>Cubículo 03 · Cal.com (Tratamientos alt.)</label><input id="cfg-calOtros2"></div>
+        </div>
+      </div>
+      <div style="padding-top:18px;border-top:1px solid var(--border);margin-bottom:24px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:12px;color:var(--rose-dark);">📆 Calendarios embebidos — Agenda de Hoy</div>
+        <div style="background:linear-gradient(135deg,rgba(184,124,124,0.06),rgba(184,160,114,0.06));border-radius:12px;padding:14px;border:1px solid var(--border);display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <label style="font-size:0.77rem;font-weight:500;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Google Calendar · Cubículo 01 · Láser</label>
+            <input id="calEmbedUrl" placeholder="https://calendar.google.com/calendar/embed?src=..." style="margin-top:5px;width:100%;padding:9px 13px;border:1px solid var(--border);border-radius:9px;font-size:0.83rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;">
+            <span style="font-size:0.71rem;color:var(--text-light);display:block;margin-top:3px;">Google Calendar → ⚙️ → tu calendario → "Integrar calendario" → copia la <strong>Dirección pública en formato HTML</strong></span>
+          </div>
+        </div>
+      </div>
+      <div style="padding-top:18px;border-top:1px solid var(--border);">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:6px;color:var(--rose-dark);">✨ Servicios</div>
+        <div id="servicesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+        <button class="btn btn-secondary" onclick="addServiceRow()" style="font-size:0.82rem;width:100%;justify-content:center;border-style:dashed;">+ Agregar servicio</button>
+      </div>
+      <!-- PERMISOS TRABAJADORA -->
+      <div style="padding-top:18px;border-top:1px solid var(--border);">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:6px;color:var(--rose-dark);">🔒 Permisos de la Trabajadora</div>
+        <div style="font-size:0.78rem;color:var(--text-light);margin-bottom:12px;">Marca las acciones que la trabajadora SÍ puede hacer. Desmarcadas = solo la administradora puede.</div>
+        <div id="workerPermsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;"></div>
+      </div>
+      <!-- FRECUENCIAS DEL PLAN -->
+      <div style="padding-top:18px;border-top:1px solid var(--border);">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:6px;color:var(--rose-dark);">📆 Frecuencias del plan</div>
+        <div style="font-size:0.78rem;color:var(--text-light);margin-bottom:10px;">Opciones de frecuencia que aparecen al crear/editar un servicio de una paciente.</div>
+        <div id="frecuenciasList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+        <button class="btn btn-secondary" onclick="addFrecuenciaRow()" style="font-size:0.82rem;width:100%;justify-content:center;border-style:dashed;">+ Agregar frecuencia</button>
+      </div>
+      <!-- TEXTO CONSENTIMIENTO LÁSER -->
+      <div style="padding-top:18px;border-top:1px solid var(--border);margin-top:8px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:4px;color:var(--rose-dark);">📋 Texto del Consentimiento Informado</div>
+        <div style="font-size:0.78rem;color:var(--text-light);margin-bottom:10px;">Pega aquí el texto exacto que te dio tu abogado. Se mostrará tal cual en el formulario que firma la paciente.</div>
+        <textarea id="cfg-consentText" rows="12" style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;resize:vertical;line-height:1.6;color:var(--text);outline:none;background:white;" placeholder="Pega aquí el texto legal completo del consentimiento informado que te proporcionó tu abogado...
+
+Ejemplo:
+Yo, [Nombre], mayor de edad...
+...
+
+Puedes usar [Nombre] para que el nombre de la paciente se inserte automáticamente."></textarea>
+        <div style="font-size:0.72rem;color:var(--text-light);margin-top:6px;">💡 Usa <strong>[Nombre]</strong> donde quieras que aparezca el nombre de la paciente automáticamente.</div>
+      </div>
+
+      <!-- TEXTO CONSENTIMIENTO BODY -->
+      <div style="padding-top:18px;border-top:1px solid var(--border);margin-top:8px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;margin-bottom:4px;color:var(--rose-dark);">📋 Consentimiento Body</div>
+        <div style="font-size:0.78rem;color:var(--text-light);margin-bottom:10px;">Texto del consentimiento para tratamientos corporales</div>
+        <textarea id="cfg-consentTextBody" rows="10" style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;resize:vertical;line-height:1.6;color:var(--text);outline:none;background:white;" placeholder="Pega aquí el texto del consentimiento para Body..."></textarea>
+        <div style="font-size:0.72rem;color:var(--text-light);margin-top:6px;">💡 Usa <strong>[Nombre]</strong> donde quieras que aparezca el nombre de la paciente automáticamente.</div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:18px;border-top:1px solid var(--border);">
+        <button class="btn btn-secondary" onclick="closeModal('settingsModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAR -->
+<div class="modal-overlay" id="importModal" style="z-index:200000">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>📂 Importar Respaldo</h2><button class="close-btn" onclick="closeModal('importModal')">✕</button></div>
+    <div class="modal-body">
+      <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:16px;">Esto reemplazará los datos actuales.</p>
+      <input type="file" id="importFile" accept=".json" style="width:100%;padding:10px;border:2px dashed var(--border);border-radius:10px;">
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+        <button class="btn btn-secondary" onclick="closeModal('importModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="doImport()">📂 Restaurar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Historial de Respaldos Automáticos -->
+<!-- BANNER RECORDATORIO RESPALDO SEMANAL -->
+<div id="backupReminderBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:500;background:rgba(28,28,20,0.78);color:rgba(210,200,180,0.7);padding:6px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;font-family:'DM Sans',sans-serif;backdrop-filter:blur(8px);border-bottom:1px solid rgba(180,160,120,0.1);">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:1rem;opacity:0.6;">💾</span>
+    <div>
+      <div style="font-weight:500;font-size:0.8rem;opacity:0.75;" id="backupReminderTitle">Recuerda hacer tu respaldo</div>
+      <div style="font-size:0.72rem;opacity:0.55;" id="backupReminderSub">Descarga tu respaldo para proteger tus datos.</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button onclick="exportBackup();document.getElementById('backupReminderBanner').style.display='none';" style="background:rgba(180,160,120,0.15);color:rgba(210,200,180,0.8);border:1px solid rgba(180,160,120,0.2);border-radius:7px;padding:4px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.75rem;white-space:nowrap;">Descargar ahora</button>
+    <button onclick="snoozeBackupReminder()" style="background:rgba(180,160,120,0.15);color:rgba(210,200,180,0.75);border:1px solid rgba(180,160,120,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.72rem;white-space:nowrap;">Recordar mañana</button>
+    <button onclick="dismissBackupBannerForever()" style="background:none;border:none;color:rgba(180,160,120,0.4);font-size:1rem;cursor:pointer;line-height:1;padding:2px;">✕</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="backupHistoryModal" style="z-index:200000" onclick="if(event.target===this)closeModal('backupHistoryModal')">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h2>Historial de Respaldos</h2>
+      <button class="close-btn" onclick="closeModal('backupHistoryModal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--border);font-size:0.8rem;color:var(--text-light);">
+        Se guardan automáticamente las últimas <strong>15 versiones</strong>. Puedes restaurar cualquiera sin perder el actual.
+      </div>
+      <div id="backupHistoryList" style="max-height:400px;overflow-y:auto;"></div>
+      <div style="padding:14px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <button class="btn btn-secondary" onclick="closeModal('backupHistoryModal')">Cerrar</button>
+        <button class="btn btn-primary" onclick="exportBackup()">💾 Descargar Excel ahora</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA PRE-CITA -->
+<div class="modal-overlay" id="newPreCitaModal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header"><h2>Nueva Pre-cita</h2><button class="close-btn" onclick="closeModal('newPreCitaModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:var(--gold-light);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:0.82rem;color:var(--rose-dark);">
+        💡 <strong>Flujo:</strong> Guarda los datos del cliente → envíale el link de calendario → cuando confirme su hora cambia el estado a ✅ Confirmada → conviértela en paciente.
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input id="pcNombre" placeholder="Nombre"></div>
+        <div class="form-group"><label>Apellido *</label><input id="pcApellido" placeholder="Apellido"></div>
+        <div class="form-group"><label>Teléfono / WhatsApp *</label><input id="pcTel" placeholder="+51 9..." oninput="updatePcWaPreview()"></div>
+        <div class="form-group"><label>Fecha tentativa</label><input type="date" id="pcFechaTentativa" onchange="checkPcConflict()"></div>
+        <div class="form-group"><label>Hora <span style="font-size:0.7rem;color:var(--text-light);">(opcional)</span></label><input type="time" id="pcHora" onchange="checkPcConflict()"></div>
+        <div class="form-group full">
+          <label>Servicio deseado *</label>
+          <select id="pcServicio" onchange="updatePcCubiculo();updatePcWaPreview()"><option value="">Seleccionar...</option></select>
+        </div>
+        <div class="form-group full">
+          <label>Cubículo asignado</label>
+          <select id="pcCubiculo" onchange="updatePcWaPreview();checkPcConflict()">
+            <option value="01">Cubículo 01 · Depilación Láser</option>
+            <option value="02">Cubículo 02 · Tratamientos</option>
+            <option value="03">Cubículo 03 · Tratamientos (alt.)</option>
+          </select>
+          <div id="pcConflictAlert" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;font-size:0.82rem;"></div>
+        </div>
+        <div class="form-group"><label>Monto separación (S/)</label><input type="number" id="pcSeparacion" placeholder="0.00" min="0" step="0.50"></div>
+        <div class="form-group"><label>Estado</label>
+          <select id="pcEstado">
+            <option value="pendiente">⏳ Pendiente — esperando calendario</option>
+            <option value="confirmada">✅ Confirmada — ya reservó hora</option>
+            <option value="cancelada">❌ Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Notas</label><textarea id="pcNotas" placeholder="Observaciones del cliente, restricciones, etc..."></textarea></div>
+      </div>
+
+      <!-- Preview WA -->
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;margin-bottom:8px;color:var(--rose-dark);">Mensaje WA listo para enviar</div>
+        <div class="wa-preview" id="pcWaPreview" style="font-size:0.82rem;"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-green" onclick="sendPcWa()" style="font-size:0.82rem;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> Enviar por WhatsApp</button>
+          <button class="btn btn-secondary" onclick="copyPcWa()" style="font-size:0.82rem;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar mensaje</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+        <button class="btn btn-secondary" onclick="closeModal('newPreCitaModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="savePreCita()">💾 Guardar Pre-cita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PRE-CITA -->
+<div class="modal-overlay" id="editPreCitaModal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header"><h2>Editar Pre-cita</h2><button class="close-btn" onclick="closeModal('editPreCitaModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input id="epcNombre" placeholder="Nombre"></div>
+        <div class="form-group"><label>Apellido *</label><input id="epcApellido" placeholder="Apellido"></div>
+        <div class="form-group"><label>Teléfono</label><input id="epcTel" placeholder="+51 9..."></div>
+        <div class="form-group"><label>Fecha tentativa</label><input type="date" id="epcFechaTentativa" onchange="checkEpcConflict()"></div>
+        <div class="form-group"><label>Hora <span style="font-size:0.7rem;color:var(--text-light);">(opcional)</span></label><input type="time" id="epcHora" onchange="checkEpcConflict()"></div>
+        <div class="form-group full"><label>Servicio</label><select id="epcServicio"></select></div>
+        <div class="form-group full"><label>Cubículo</label>
+          <select id="epcCubiculo" onchange="checkEpcConflict()">
+            <option value="01">Cubículo 01 · Depilación Láser</option>
+            <option value="02">Cubículo 02 · Tratamientos</option>
+            <option value="03">Cubículo 03 · Tratamientos (alt.)</option>
+          </select>
+          <div id="epcConflictAlert" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;font-size:0.82rem;"></div>
+        </div>
+        <div class="form-group"><label>Monto separación (S/)</label><input type="number" id="epcSeparacion" min="0" step="0.50"></div>
+        <div class="form-group"><label>Estado</label>
+          <select id="epcEstado">
+            <option value="pendiente">⏳ Pendiente</option>
+            <option value="confirmada">✅ Confirmada</option>
+            <option value="cancelada">❌ Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Notas</label><textarea id="epcNotas"></textarea></div>
+      </div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+        <button class="btn btn-danger" style="margin-right:auto;padding:9px 16px;" onclick="deletePreCita()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Eliminar</button>
+        <button class="btn btn-secondary" style="background:#e8f4ea;color:#2e7d32;border-color:#a5d6b0;" onclick="convertirAPaciente()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> Convertir a Paciente</button>
+        <button class="btn btn-secondary" onclick="closeModal('editPreCitaModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditPreCita()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO REGISTRO PAGOS -->
+<!-- MODAL VER ABONOS (legacy compat) -->
+<div class="modal-overlay" id="abonosDetailModal" style="z-index:200000">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Historial de Pagos</h2><button class="close-btn" onclick="closeModal('abonosDetailModal')">✕</button></div>
+    <div class="modal-body"><div id="abonosDetailContent"></div></div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO REGISTRO (Pagos independiente) -->
+<div class="modal-overlay" id="nuevoRegistroModal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nuevo Registro</h2>
+      <button class="close-btn" onclick="closeModal('nuevoRegistroModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">Fecha *</label><input id="nrFecha" type="date" class="input"></div>
-        <div class="form-group"><label class="form-label">Atendió</label><input id="nrAtendio" class="input" placeholder="Nombre"></div>
-        <div class="form-group"><label class="form-label">Nombre *</label><input id="nrNombre" class="input" placeholder="Nombre"></div>
-        <div class="form-group"><label class="form-label">Apellido</label><input id="nrApellido" class="input" placeholder="Apellido"></div>
-        <div class="form-group"><label class="form-label">Teléfono</label><input id="nrTelefono" class="input" placeholder="Teléfono"></div>
-        <div class="form-group">
-          <label class="form-label">Servicio</label>
-          <select id="nrServicio" class="select">
-            <option value="">—</option>
-            <option>Depilación Láser</option>
-            <option>GlúTeos De Porcelana</option>
-            <option>Body Porcelana</option>
-            <option>Glúteos de Porcelana</option>
-            <option>Sculpt Body</option>
-            <option>Slimbody</option>
-            <option>Productos (Ventas)</option>
-          </select>
+      <!-- Buscar o escribir paciente -->
+      <div style="background:var(--cream);border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--rose-dark);margin-bottom:8px;letter-spacing:0.04em;">PACIENTE</div>
+        <div style="position:relative;">
+          <input id="nrBuscar" class="search-box" placeholder="🔍 Buscar paciente existente (jala sus datos automáticamente)..." oninput="nrBuscarPaciente()" onfocus="nrBuscarPaciente()" autocomplete="off" style="margin-bottom:0;width:100%;">
+          <div id="nrResultados" style="position:absolute;top:calc(100% + 2px);left:0;right:0;border:1px solid var(--border);border-radius:8px;max-height:220px;overflow-y:auto;display:none;background:white;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.12);"></div>
         </div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Zonas</label><input id="nrZonas" class="input" placeholder="Ej: gluteos, bikini"></div>
-        <div class="form-group"><label class="form-label">Total S/</label><input id="nrTotal" type="number" step="0.01" class="input" placeholder="0.00"></div>
-        <div class="form-group"><label class="form-label">Adelanto S/</label><input id="nrAdelanto" type="number" step="0.01" class="input" placeholder="0.00"></div>
-        <div class="form-group"><label class="form-label">Comisión S/</label><input id="nrComision" type="number" step="0.01" class="input" placeholder="0.00"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Notas</label><input id="nrNotas" class="input" placeholder="Opcional"></div>
+        <div style="margin-bottom:8px;"></div>
+        <div class="form-grid" style="margin-top:6px;">
+          <div class="form-group"><label>Nombre *</label><input id="nrNombre" placeholder="Nombre"></div>
+          <div class="form-group"><label>Apellido *</label><input id="nrApellido" placeholder="Apellido"></div>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeModal('nuevoPagoModal')">Cancelar</button>
-        <button id="btnGuardarPago" class="btn btn-primary" onclick="guardarNuevoPago()">Guardar</button>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="nrFecha">
+        </div>
+        <div class="form-group">
+          <label>Servicio</label>
+          <select id="nrServicio"><option value="">-- Selecciona --</option></select>
+        </div>
+        <div class="form-group full">
+          <label>Zonas / Comentarios</label>
+          <input id="nrZonas" placeholder="ej: Varias zonas, última sesión, retoque, axila/bikini...">
+        </div>
+        <div class="form-group full">
+          <label>Quien atendió</label>
+          <input id="nrAtendio" placeholder="ej: Adriana, Paola, Lyrosse...">
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 12px;">
+      <div style="background:#f8fdf9;border:1px solid #a5d6b0;border-radius:12px;padding:14px;">
+        <div style="font-weight:700;color:#2e7d32;margin-bottom:10px;font-size:0.85rem;">💰 Pago</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Total (S/)</label>
+            <input type="number" id="nrTotal" placeholder="0.00" min="0" step="0.10" oninput="nrCalcSaldo()">
+          </div>
+          <div class="form-group">
+            <label>Adelanto / Separación (S/)</label>
+            <input type="number" id="nrAdelanto" placeholder="0.00" min="0" step="0.10" oninput="nrCalcSaldo()">
+          </div>
+          <div class="form-group worker-hide-comision">
+            <label>Comisión (S/)</label>
+            <input type="number" id="nrComision" placeholder="0.00" min="0" step="0.10">
+          </div>
+          <div class="form-group">
+            <label>Saldo pendiente</label>
+            <div id="nrSaldo" style="padding:10px 12px;background:white;border:1px solid var(--border);border-radius:8px;font-weight:700;color:var(--red);">S/0.00</div>
+          </div>
+          <div class="form-group full">
+            <label>Notas adicionales</label>
+            <input id="nrNotas" placeholder="Observaciones adicionales...">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+        <button class="btn btn-secondary" onclick="closeModal('nuevoRegistroModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNuevoRegistro()">💾 Guardar Registro</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Nueva pre-cita -->
-<div id="nuevaPreCitaModal" class="modal-overlay">
-  <div class="modal">
+<!-- MODAL EDITAR REGISTRO -->
+<div class="modal-overlay" id="editRegistroModal">
+  <div class="modal" style="max-width:620px;">
     <div class="modal-header">
-      <h3>Nueva Pre-cita</h3>
-      <button class="modal-close" onclick="closeModal('nuevaPreCitaModal')">✕</button>
+      <h2>Editar Registro</h2>
+      <button class="close-btn" onclick="closeModal('editRegistroModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label class="form-label">Nombre *</label><input id="pcNombre" class="input" placeholder="Nombre"></div>
-        <div class="form-group"><label class="form-label">Apellido</label><input id="pcApellido" class="input" placeholder="Apellido"></div>
-        <div class="form-group"><label class="form-label">Teléfono</label><input id="pcTelefono" class="input" placeholder="Teléfono"></div>
+      <div class="form-grid">
         <div class="form-group">
-          <label class="form-label">Servicio</label>
-          <select id="pcServicio" class="select">
-            <option value="">—</option>
-            <option>Depilación Láser</option>
-            <option>GlúTeos De Porcelana</option>
-            <option>Body Porcelana</option>
-            <option>Glúteos de Porcelana</option>
-            <option>Sculpt Body</option>
-            <option>Slimbody</option>
-          </select>
+          <label>Fecha</label>
+          <input type="date" id="erFecha">
         </div>
-        <div class="form-group"><label class="form-label">Fecha tentativa</label><input id="pcFecha" type="date" class="input"></div>
-        <div class="form-group"><label class="form-label">Hora</label><input id="pcHora" type="time" class="input"></div>
         <div class="form-group">
-          <label class="form-label">Cubículo</label>
-          <select id="pcCubiculo" class="select">
-            <option value="">—</option>
-            <option value="Cub. 01">Cub. 01</option>
-            <option value="Cub. 02">Cub. 02</option>
-          </select>
+          <label>Nombre completo</label>
+          <input id="erNombre" placeholder="Nombre y apellido">
         </div>
-        <div class="form-group"><label class="form-label">Separación S/</label><input id="pcSeparacion" type="number" step="0.01" class="input" placeholder="0.00"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Notas</label><input id="pcNotas" class="input" placeholder="Opcional"></div>
+        <div class="form-group">
+          <label>Servicio</label>
+          <select id="erServicio"><option value="">-- Selecciona --</option></select>
+        </div>
+        <div class="form-group">
+          <label>Quien atendió</label>
+          <input id="erAtendio" placeholder="ej: Adriana, Paola...">
+        </div>
+        <div class="form-group full">
+          <label>Zonas / Comentarios</label>
+          <input id="erZonas" placeholder="ej: Varias zonas, retoque...">
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeModal('nuevaPreCitaModal')">Cancelar</button>
-        <button class="btn btn-primary" onclick="guardarNuevaPreCita()">Guardar</button>
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0 12px;">
+      <div style="background:#f8fdf9;border:1px solid #a5d6b0;border-radius:12px;padding:14px;">
+        <div style="font-weight:700;color:#2e7d32;margin-bottom:10px;font-size:0.85rem;">💰 Pago</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Total (S/)</label><input type="number" id="erTotal" placeholder="0.00" min="0" step="0.10" oninput="erCalcSaldo()"></div>
+          <div class="form-group"><label>Adelanto (S/)</label><input type="number" id="erAdelanto" placeholder="0.00" min="0" step="0.10" oninput="erCalcSaldo()"></div>
+          <div class="form-group"><label>Comisión (S/)</label><input type="number" id="erComision" placeholder="0.00" min="0" step="0.10"></div>
+          <div class="form-group">
+            <label>Saldo pendiente</label>
+            <div id="erSaldo" style="padding:10px 12px;background:white;border:1px solid var(--border);border-radius:8px;font-weight:700;color:var(--red);">S/0.00</div>
+          </div>
+          <div class="form-group full"><label>Notas</label><input id="erNotas" placeholder="Observaciones..."></div>
+        </div>
+      </div>
+      <div class="modal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+        <button class="btn btn-danger" style="margin-right:auto;" onclick="deleteRegistroActual()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Eliminar</button>
+        <button class="btn btn-secondary" onclick="closeModal('editRegistroModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditRegistro()">💾 Guardar cambios</button>
       </div>
     </div>
   </div>
 </div>
+<script src="js/app.js"></script>
 
-<!-- Toast -->
-<div id="toast"></div>
 
-<!-- ── Scripts (orden importa) ──────────────────────────────── -->
-<script src="js/config.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/data.js"></script>
-<script src="js/inicio.js"></script>
-<script src="js/pacientes.js"></script>
-<script src="js/pagos.js"></script>
-<script src="js/precitas.js"></script>
-<script src="js/seguimiento.js"></script>
+
 <script>
-// ── Helpers extras ───────────────────────────────────────────
-async function manualRefresh() {
-  setSyncState('syncing');
-  try {
-    await Promise.all([loadPatients(), loadPayments(), loadPreCitas(), loadCitas()]);
-    setSyncState('idle');
-    showToast('✅ Datos actualizados');
-    renderInicio();
-    renderPacientes();
-    renderPagos();
-    renderPreCitas();
-  } catch(e) {
-    setSyncState('error');
-    showToast('❌ Error al actualizar', '#c0392b', 4000);
-  }
+// ── PWA Manifest (injected as blob) ──
+(function(){
+  const manifest = {
+    name: "elle studio · Gestión de Pacientes",
+    short_name: "elle studio",
+    description: "Gestión de pacientes para elle studio",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#f5f2ec",
+    theme_color: "#1c1f18",
+    orientation: "portrait",
+    icons: [
+      {
+        src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231c1f18'/><text x='256' y='340' text-anchor='middle' font-family='Georgia,serif' font-size='280' fill='%23e8e0cc'>e</text></svg>",
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('pwaManifest').href = url;
+})();
+
+// ── Service Worker ──
+if('serviceWorker' in navigator){
+  const swCode = `
+    const CACHE = 'elle-studio-v1';
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).catch(()=>new Response('', {status:408})))
+      );
+    });
+  `;
+  const swBlob = new Blob([swCode], {type:'text/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl, {scope:'./'}).catch(()=>{});
 }
 
-// Cerrar modal al click fuera
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) overlay.classList.remove('open');
-  });
-});
 
-// Set fecha hoy en forms de pago
-document.getElementById('nrFecha').valueAsDate = new Date();
 
-// ── Boot ─────────────────────────────────────────────────────
-bootAuth();
+
 </script>
+
+<!-- BARRA DE NAVEGACIÓN INFERIOR (solo móvil) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bn-item active" onclick="bnNav('inicio',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </div>
+  <div class="bn-item" onclick="bnNav('pacientes',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Pacientes
+  </div>
+  <div class="bn-item" onclick="bnNav('precitas',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Citas
+  </div>
+  <div class="bn-item" onclick="bnNav('whatsapp',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+    WhatsApp
+  </div>
+  <div class="bn-item" onclick="bnNav('mas',this)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+    Más
+  </div>
+</nav>
+
+<!-- MENÚ "MÁS" PARA MÓVIL -->
+<div id="bnMasMenu" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:199;background:rgba(28,28,23,0.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,0.1);padding:16px 20px;padding-bottom:calc(16px + env(safe-area-inset-bottom));animation:slideUp 0.2s ease;">
+  <div style="color:rgba(255,255,255,0.35);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-family:'DM Sans',sans-serif;">Más secciones</div>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    <div onclick="bnNav('seguimiento',document.querySelector('.bn-item.active'));document.getElementById('bnMasMenu').style.display='none';" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;cursor:pointer;color:white;font-family:'DM Sans',sans-serif;font-size:0.9rem;-webkit-tap-highlight-color:transparent;" onmouseenter="this.style.background='rgba(255,255,255,0.07)'" onmouseleave="this.style.background=''">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Seguimiento
+    </div>
+    <div onclick="bnNav('pagos',document.querySelector('.bn-item.active'));document.getElementById('bnMasMenu').style.display='none';" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;cursor:pointer;color:white;font-family:'DM Sans',sans-serif;font-size:0.9rem;-webkit-tap-highlight-color:transparent;" onmouseenter="this.style.background='rgba(255,255,255,0.07)'" onmouseleave="this.style.background=''">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pagos
+    </div>
+    <div onclick="bnNav('precios',document.querySelector('.bn-item.active'));document.getElementById('bnMasMenu').style.display='none';" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;cursor:pointer;color:white;font-family:'DM Sans',sans-serif;font-size:0.9rem;-webkit-tap-highlight-color:transparent;" onmouseenter="this.style.background='rgba(255,255,255,0.07)'" onmouseleave="this.style.background=''">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Lista de Precios
+    </div>
+  </div>
+  <div onclick="document.getElementById('bnMasMenu').style.display='none'" style="margin-top:8px;padding:12px;text-align:center;color:rgba(255,255,255,0.4);font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Cerrar</div>
+</div>
+
+<!-- ===== TERMINAL DE DIAGNÓSTICO (solo admin) ===== -->
+<div id="diagTerminalModal" style="display:none;position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.85);align-items:flex-end;justify-content:center;">
+  <div style="width:100%;max-width:780px;max-height:88vh;background:#0d1117;border-radius:20px 20px 0 0;display:flex;flex-direction:column;font-family:'Courier New',monospace;box-shadow:0 -8px 40px rgba(0,0,0,0.6);">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #21262d;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="color:#7ec8a0;font-size:1rem;">⚡</span>
+        <span style="color:#e6edf3;font-size:0.9rem;font-weight:600;">Terminal · Elle Studio</span>
+        <span id="diagBadge" style="font-size:0.7rem;padding:2px 8px;border-radius:20px;background:#21262d;color:#7ec8a0;">EN VIVO</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="diagClear()" style="background:#21262d;border:none;color:#8b949e;border-radius:6px;padding:4px 10px;font-size:0.75rem;cursor:pointer;">Limpiar</button>
+        <button onclick="diagRunCheck()" style="background:#1f6feb;border:none;color:white;border-radius:6px;padding:4px 10px;font-size:0.75rem;cursor:pointer;">▶ Verificar todo</button>
+        <button onclick="closeDiagTerminal()" style="background:none;border:none;color:#8b949e;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
+    </div>
+    <!-- Stats bar -->
+    <div id="diagStatsBar" style="display:flex;gap:0;flex-shrink:0;border-bottom:1px solid #21262d;overflow-x:auto;">
+      <div class="dstat" id="dstat-patients" style="padding:8px 16px;border-right:1px solid #21262d;min-width:120px;">
+        <div style="font-size:0.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:0.05em;">Pacientes</div>
+        <div id="dstat-patients-val" style="font-size:1.1rem;color:#e6edf3;font-weight:700;">—</div>
+      </div>
+      <div class="dstat" style="padding:8px 16px;border-right:1px solid #21262d;min-width:140px;">
+        <div style="font-size:0.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:0.05em;">localStorage</div>
+        <div id="dstat-ls-val" style="font-size:1.1rem;color:#e6edf3;font-weight:700;">—</div>
+      </div>
+      <div class="dstat" style="padding:8px 16px;border-right:1px solid #21262d;min-width:120px;">
+        <div style="font-size:0.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:0.05em;">Supabase</div>
+        <div id="dstat-supa-val" style="font-size:1.1rem;font-weight:700;">—</div>
+      </div>
+      <div class="dstat" style="padding:8px 16px;min-width:150px;">
+        <div style="font-size:0.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:0.05em;">Último guardado</div>
+        <div id="dstat-save-val" style="font-size:0.85rem;color:#e6edf3;font-weight:700;">—</div>
+      </div>
+    </div>
+    <!-- Log output -->
+    <div id="diagLog" style="flex:1;overflow-y:auto;padding:12px 16px;font-size:0.78rem;line-height:1.7;color:#8b949e;min-height:200px;max-height:55vh;"></div>
+    <!-- Input bar -->
+    <div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid #21262d;flex-shrink:0;align-items:center;">
+      <span style="color:#7ec8a0;font-size:0.85rem;flex-shrink:0;">elle@studio $</span>
+      <input id="diagInput" type="text" placeholder="Escribe un comando: check, ls, supa, errors, clear, help" 
+        style="flex:1;background:transparent;border:none;outline:none;color:#e6edf3;font-family:'Courier New',monospace;font-size:0.8rem;"
+        onkeydown="if(event.key==='Enter')diagRunCmd(this.value)">
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
