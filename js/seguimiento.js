@@ -1,5 +1,4 @@
 // ===== TRACKING =====
-let _tf='';let _trkSort={col:'fecha',dir:-1};let _trkFilters={search:'',svc:'',month:'',cub:''};
 
 function filterTracking(s,el){
   _tf=s;
@@ -39,7 +38,6 @@ function sortTracking(col){
 }
 
 // Calcular grupos de stats + guardar rows
-let _trkStatsData={hoy:[],semana:[],'30':[],vencidas:[]};
 function _trkComputeStatsData(){
   const out={hoy:[],semana:[],'30':[],vencidas:[]};
   const today=new Date();
@@ -240,8 +238,6 @@ function _trkRowHtml({p,sv,z,s,i}){
   </tr>`;
 }
 // === MEJORAS SEGUIMIENTO: estado, agrupar, bulk, export, notas inline, próxima modal ===
-let _trkGrouped=false;
-let _trkStoreRows=[];
 function trkToggleGroup(){
   _trkGrouped=!_trkGrouped;
   const btn=document.getElementById('trkGroupBtn');
@@ -326,7 +322,6 @@ function trkExportExcel(){
   showToast('📊 Excel descargado','var(--sage-dark)');
 }
 // === MODAL PRÓXIMA SESIÓN (confirmar/reagendar) ===
-let _proxSesPid=null,_proxSesSvId=null,_proxSesZona=null,_proxSesIdx=null;
 function openProximaModal(pid,svId,zona,si){
   const p=patients.find(x=>String(x.id)===String(pid));if(!p)return;
   const sv=(p.servicios||[]).find(x=>String(x.id)===String(svId));if(!sv)return;

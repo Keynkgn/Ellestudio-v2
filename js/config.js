@@ -62,6 +62,16 @@ let registros = JSON.parse(localStorage.getItem('ce_v3_registros') || '[]');
 let currentRole = null;
 let _selectedRole = null;
 
+// ===== FILTER/SORT STATE =====
+let _sf='';
+let _tf='';
+let _trkSort={col:'fecha',dir:-1};
+let _trkFilters={search:'',svc:'',month:'',cub:''};
+let _trkStatsData={hoy:[],semana:[],'30':[],vencidas:[]};
+let _trkGrouped=false;
+let _trkStoreRows=[];
+let _proxSesPid=null,_proxSesSvId=null,_proxSesZona=null,_proxSesIdx=null;
+
 // ===== TEMPLATES =====
 const LASER_TPL=`Hola [Nombre]! Queremos recordarte que tu proxima sesion de *Depilacion Laser* esta por llegar. Agenda tu turno cuando quieras eligiendo el dia y horario que mas te convenga:
 
