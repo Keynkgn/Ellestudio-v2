@@ -110,6 +110,7 @@ function showSection(id,el){
   document.getElementById('sec-'+id).classList.add('active');
   if(el&&el.classList)el.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+  try{localStorage.setItem('es_last_section',id);}catch(e){}
   if(id==='pacientes'){renderContactBanner();}
   if(id==='seguimiento'){populateTrkSvcFilter();renderTracking();}
   if(id==='whatsapp'){populateWaSelects();initCalEmbedWA();setTimeout(loadCalBookingsWA,800);}
@@ -202,6 +203,14 @@ try{
   localStorage.removeItem('elle_backups');
 }catch(e){}
 applyConfigToUI();renderAll();
+// Restaurar última sección activa
+(function(){
+  const last=localStorage.getItem('es_last_section');
+  const valid=['inicio','pacientes','seguimiento','pagos','precitas','whatsapp','precios'];
+  if(last&&valid.includes(last)&&last!=='inicio'){
+    setTimeout(()=>showSectionById(last),200);
+  }
+})();
 setTimeout(updateBackupReminderBanner, 500);
 setTimeout(()=>{ migratePhotosToStorage().catch(()=>{}); }, 5000);
 setTimeout(renderCalFrames, 800);

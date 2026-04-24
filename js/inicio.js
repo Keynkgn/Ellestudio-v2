@@ -1189,10 +1189,10 @@ function renderStats(){
   const conFecha=todasSes.filter(s=>s.fecha);
   const asistidas=conFecha.filter(s=>s.asistio);
   const tasa=conFecha.length?Math.round(asistidas.length/conFecha.length*100):0;
-  const sc=(n,label)=>`<div class="stat-card"><div class="stat-number" style="font-family:'DM Sans',sans-serif;font-size:2.4rem;font-weight:200;letter-spacing:4px;">${n}</div><div class="stat-label" style="font-size:0.62rem;letter-spacing:4px;text-transform:uppercase;margin-top:6px;">${label}</div></div>`;
+  const sc=(n,label,cls='')=>`<div class="stat-card${cls?(' '+cls):''}"><div class="stat-number" style="font-family:'DM Sans',sans-serif;font-size:2.4rem;font-weight:200;letter-spacing:4px;">${n}</div><div class="stat-label" style="font-size:0.62rem;letter-spacing:4px;text-transform:uppercase;margin-top:6px;">${label}</div></div>`;
   let h=sc(patients.length,'Pacientes');
   h+=sc(totalSes,'Sesiones Total');
-  h+=sc('S/'+ingresosMes.toFixed(0),'Ingresos Mes');
+  h+=sc('S/'+ingresosMes.toFixed(0),'Ingresos Mes','worker-hide');
   h+=sc(nuevasMes,'Nuevas este Mes');
   h+=sc(tasa+'%','Asistencia');
   SERVICES().forEach(s=>{const c=patients.filter(p=>(p.servicios||[]).some(sv=>sv.servicio===s)).length;h+=sc(c,s.split(' ').slice(0,2).join(' '));});

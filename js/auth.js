@@ -144,12 +144,16 @@ function disableDeleteButtons() {
   if(!perms.verPagos){
     css.push('#sec-pagos { display: none !important; }');
     css.push('.tab:nth-child(5) { display: none !important; }');
+    // Ocultar métricas financieras marcadas con worker-hide
+    css.push('.worker-hide { display: none !important; }');
   }
   if(!perms.verConfiguracion){
     css.push('button[onclick*="openSettings"] { display: none !important; }');
   }
   if(!perms.verComisiones){
     css.push('.worker-hide-comision { display: none !important; }');
+    // Ocultar columna comisión en pagos
+    css.push('.col-comision, [data-col="comision"] { display: none !important; }');
   }
   // Botones permitidos SIEMPRE (independiente de eliminar)
   css.push('button[onclick*="openAddZoneModal"], button[onclick*="openCameraCapture"], button[onclick*="photoInput"], button[onclick*="openNewPaqueteModal"], button[onclick*="openAddSvcModal"], button[onclick*="openAddSesModal"], button[onclick*="addSes"], button[onclick*="openNewPreCita"], button[onclick*="openNuevaCitaModal"], button[onclick*="openNewPatient"] { display: inline-flex !important; }');
