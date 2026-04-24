@@ -1203,7 +1203,6 @@ function renderStats(){
 // ===== ALERTS (legacy - now handled by renderAlertsInicio) =====
 function renderAlerts(){renderAlertsInicio();renderStatsInicio();}
 
-let _sf='';
 function renderContactBanner(list) {
   const el = document.getElementById('patContactBanner');
   if (!el) return;
