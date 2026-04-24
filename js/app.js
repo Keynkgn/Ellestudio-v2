@@ -1,7 +1,8 @@
+// MOVED TO config.js — DEFAULT_SERVICES, CAL_LINKS, CUB_COLORS
 // ===== CONFIG =====
-const DEFAULT_SERVICES=['Depilación Láser','Glúteos de Porcelana','Limpieza Facial Post Operatorio','Limpieza de Espalda','Reductores'];
-const CAL_LINKS={laser:'https://calendar.app.google/3hRGipXZtueFVbVm6',cal02:'https://cal.com/elle-studio-56pfyg/tratamientos-ellestudio02',cal03:'https://cal.com/elle-studio-56pfyg/gluteos-de-porcelana'};
-const CUB_COLORS={c01:'#b87c7c',c02:'#4a5530',c03:'#1a5c38'};
+// const DEFAULT_SERVICES=[...] — MOVED TO config.js
+// const CAL_LINKS={...} — MOVED TO config.js
+// const CUB_COLORS={...} — MOVED TO config.js
 
 function getLinkForCubiculo(cub){
   if(cub==='01')return document.getElementById('calendarLink')?.value||appConfig.calLaser;
@@ -43,68 +44,12 @@ function _abrirAgendaSvc(pacId, svcId){
   }
 }
 
-// Permisos por defecto para Trabajadora (todo prohibido = marca ❌ significa "NO puede hacerlo")
-const DEFAULT_WORKER_PERMS={
-  eliminarPacientes:false,
-  eliminarServicios:false,
-  eliminarZonas:false,
-  eliminarSesiones:false,
-  eliminarPaquetes:false,
-  eliminarPreCitas:false,
-  eliminarCitas:false,
-  eliminarFotos:false,
-  eliminarMensajesWA:false,
-  verPagos:false,
-  verComisiones:false,
-  verConfiguracion:false,
-  verPrecios:true,  // por default ve precios
-  editarPrecios:false
-};
-const DEFAULT_FRECUENCIAS=[
-  {label:'21 días',dias:21},
-  {label:'1 vez por semana',dias:7},
-  {label:'2 veces por semana',dias:3},
-  {label:'3 veces por semana',dias:2},
-  {label:'Mensual',dias:30}
-];
-const DEFAULT_CONFIG={studioName:"Elle Studio",address:"Av. Paz Soldán 235, San Isidro, Lima, Perú",calLaser:CAL_LINKS.laser,calOtros:CAL_LINKS.cal02,calOtros2:CAL_LINKS.cal03,calEmbedUrl:"https://calendar.google.com/calendar/embed?src=ellestudiolr%40gmail.com&ctz=America%2FLima",services:[...DEFAULT_SERVICES],frecuencias:[...DEFAULT_FRECUENCIAS],workerPerms:{...DEFAULT_WORKER_PERMS}};
-const _saved=JSON.parse(localStorage.getItem("ce_v3_config")||"null")||{};
-// Never let an empty calEmbedUrl from old localStorage override the default
-if(!_saved.calEmbedUrl) delete _saved.calEmbedUrl;
-let appConfig=Object.assign({},DEFAULT_CONFIG,_saved);
-function saveConfig(){try{localStorage.setItem("ce_v3_config",JSON.stringify(appConfig));}catch(e){console.error("saveConfig localStorage:",e);}}
-function SERVICES(){return appConfig.services;}
-function FRECUENCIAS(){
-  if(!appConfig.frecuencias||!appConfig.frecuencias.length) appConfig.frecuencias=[...DEFAULT_FRECUENCIAS];
-  return appConfig.frecuencias;
-}
-// Normalizar nombres: "REVOLVERA- ZONA TROCANTEIRA" → "Revolvera - Zona Trocanteira"
-function tcase(s){
-  if(!s||typeof s!=='string')return s;
-  return s.toLowerCase().replace(/\s*-\s*/g,' - ').replace(/\s+/g,' ').trim()
-    .replace(/\b\p{L}/gu,c=>c.toUpperCase());
-}
+// MOVED TO config.js — DEFAULT_WORKER_PERMS, DEFAULT_FRECUENCIAS, DEFAULT_CONFIG, _saved, appConfig, saveConfig
+// MOVED TO utils.js — SERVICES(), FRECUENCIAS(), tcase()
 
+// MOVED TO config.js — patients, removeDemoPatients, SUPA_URL, SUPA_KEY, supa
 // ===== NEW DATA STRUCTURE =====
 // patient.servicios = [{id, servicio, cubiculo, plan, fechaInicio, comentarios, zonas:[{nombre, sesiones:[...]}]}]
-// Pacientes: localStorage solo como caché temporal — Supabase es la fuente principal
-let patients = JSON.parse(localStorage.getItem('ce_v3_patients')||'[]');
-// Eliminar pacientes de demo si aún están en localStorage
-(function removeDemoPatients(){
-  const demoNames=['Valentina Rossi','Camila Fernández','Luciana Martínez'];
-  const before = patients.length;
-  patients = patients.filter(p => {
-    const fullName = (p.nombre||'') + ' ' + (p.apellido||'');
-    return !demoNames.includes(fullName.trim());
-  });
-  if(patients.length !== before){
-    try{ localStorage.setItem('ce_v3_patients', JSON.stringify(patients)); }catch(e){}
-  }
-})();
-// ===== SUPABASE CONFIG =====
-const SUPA_URL = 'https://bwgiktpsmrvfaoyoftwy.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Z2lrdHBzbXJ2ZmFveW9mdHd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY2NjUsImV4cCI6MjA4NzU1MjY2NX0.-3YsxigCNWDeZnW8uLSro6UXsHhRNLmcJHEap0fnHz0';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ── Compress image — target under 150KB, MAX 600px ───────────────────────────
 function _compressToBlob(file){
@@ -387,12 +332,7 @@ async function supaRetryPendingDeletes(){
   }catch(e){ console.error('Retry pending deletes error:',e); }
 }
 // Helper: timeout para queries de Supabase (evita que un fetch colgado bloquee toda la app)
-function _supaRace(promise, ms=10000){
-  return Promise.race([
-    promise,
-    new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout: Supabase no respondió en '+(ms/1000)+'s')),ms))
-  ]);
-}
+// MOVED TO utils.js — _supaRace
 // Cargar IDs eliminados globalmente desde Supabase
 async function supaLoadDeletedIds(){
   try{
@@ -433,33 +373,7 @@ async function supaLoadConfig(key){
   }catch(e){ return null; }
 }
 
-// Indicador visual de sincronización con Supabase
-let _syncTimer = null;
-let _currentSyncState = 'syncing';
-function setSyncState(state){
-  _currentSyncState = state;
-  const ind=document.getElementById('syncIndicator');
-  const icon=document.getElementById('syncIcon');
-  if(ind && icon){
-    if(state==='syncing'){
-      ind.title='Sincronizando con la nube';
-      icon.style.background='#f0c26a';
-      icon.style.animation='syncPulse 0.9s infinite alternate';
-    }else if(state==='error'){
-      ind.title='Sin conexión a Supabase';
-      icon.style.background='#c46060';
-      icon.style.animation='none';
-    }else{
-      ind.title='Datos sincronizados en la nube';
-      icon.style.background='#6a9e7a';
-      icon.style.animation='none';
-    }
-  }
-  // Refrescar stat box del terminal si está abierto (para que no quede pegado en "Sincronizando")
-  if(typeof _diagOpen !== 'undefined' && _diagOpen && typeof _diagUpdateStats === 'function'){
-    try{ _diagUpdateStats(); }catch(e){}
-  }
-}
+// MOVED TO utils.js — setSyncState, _syncTimer, _currentSyncState, syncStyle
 // Pequeña animación suave para el punto de sincronización
 const syncStyle=document.createElement('style');
 syncStyle.textContent='@keyframes syncPulse{from{transform:scale(0.9);opacity:0.7;}to{transform:scale(1.2);opacity:1;}}';
@@ -587,18 +501,7 @@ async function initFromSupabase(){
   }
 }
 
-// Log de guardados en tiempo real
-window._saveLog = [];
-function _logSave(accion, detalle){
-  const ahora = new Date();
-  const hora = ahora.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  window._saveLog.unshift({hora, accion, detalle, ts: ahora.getTime()});
-  if(window._saveLog.length > 50) window._saveLog.pop();
-}
-
-function escapeHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// MOVED TO utils.js — _logSave, window._saveLog, escapeHtml
 function save(){
   if(typeof _diagTrackSave==='function') _diagTrackSave();
   const ts = new Date().toISOString();
@@ -681,46 +584,7 @@ async function manualRefreshData(){
 
 // Sin datos de demo — la app empieza vacía y guarda datos reales en localStorage
 
-// ===== UTILS =====
-const ini=(n,a)=>(n[0]||'')+(a[0]||'');
-function addWeeks(ds,w){if(!ds)return'';const d=new Date(ds);d.setDate(d.getDate()+w*7);return d.toISOString().split('T')[0];}
-function addDays(ds,days){if(!ds)return'';const d=new Date(ds);d.setDate(d.getDate()+days);return d.toISOString().split('T')[0];}
-// Convierte "18:00" → "6:00 PM" / "09:30" → "9:30 AM"
-function fmt12h(h){
-  if(!h||!/^\d{1,2}:\d{2}/.test(h))return h||'';
-  const [hh,mm]=h.split(':');
-  let n=parseInt(hh,10);const ampm=n>=12?'PM':'AM';
-  n=n%12;if(n===0)n=12;
-  return n+':'+mm+' '+ampm;
-}
-function fmtDate(ds){if(!ds)return'—';const[y,m,d]=ds.split('-');return`${d}/${m}/${y}`;}
-function monthName(ds){if(!ds)return'—';return['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(ds.split('-')[1])-1];}
-function daysDiff(ds){if(!ds)return null;const diff=new Date(ds)-new Date(new Date().toISOString().split('T')[0]);return Math.round(diff/(1000*60*60*24));}
-function showToast(msg,color='#1a0f0e',duration=2500){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:12px;font-size:0.85rem;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.3);transition:opacity 0.3s;color:white;';document.body.appendChild(t);}t.style.background=color;t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(()=>t.style.opacity='0',2800);}
-
-// Per-service utils
-function lastSesForSvc(svc){let l=null;(svc.zonas||[]).forEach(z=>z.sesiones.forEach(s=>{if(s.asistio&&(!l||s.fecha>l))l=s.fecha;}));return l;}
-function lastSesAny(svc){let l=null;(svc.zonas||[]).forEach(z=>z.sesiones.forEach(s=>{if(s.fecha&&(!l||s.fecha>l))l=s.fecha;}));return l;}
-function nextApptForSvc(svc){
-  const ls=lastSesForSvc(svc);
-  if(!ls) return null;
-  const weeks=svc.servicio==='Depilación Láser'?4:3;
-  const calculated=addWeeks(ls,weeks);
-  // Si la fecha ya pasó, no mostrarla en la card
-  if(daysDiff(calculated)<0) return null;
-  return calculated;
-}
-function alertDateForSvc(svc){
-  const ls=lastSesForSvc(svc);if(!ls)return null;
-  // Jerarquía: frecuenciaPlan del servicio (paciente) → 21 días default
-  if(svc.frecuenciaPlan){
-    const d=new Date(ls);d.setDate(d.getDate()+parseInt(svc.frecuenciaPlan));
-    return d.toISOString().split('T')[0];
-  }
-  return addWeeks(ls,3);
-}
-function cubTag(cub){return`<span class="cubiculo-tag c0${cub}">Cub. ${cub}</span>`;}
-function cubLabel(cub){return cub==='01'?'Cub. 01 · Láser':cub==='02'?'Cub. 02':'Cub. 03';}
+// MOVED TO utils.js — ini, addWeeks, addDays, fmt12h, fmtDate, monthName, daysDiff, showToast, lastSesForSvc, lastSesAny, nextApptForSvc, alertDateForSvc, cubTag, cubLabel
 
 // ===== BACKUP =====
 function exportBackup(){
@@ -1601,7 +1465,7 @@ function initCalEmbedWA(){
 }
 
 // ===== CAL.COM API KEY =====
-const CAL_API_KEY = 'cal_live_3e3bdf7be1475e3c0892eef82c80c921';
+// MOVED TO config.js — CAL_API_KEY
 
 function renderCalBookings(bookings, statusFilter, containerId){
   const container = document.getElementById(containerId || 'calBookingsContainer');
@@ -3924,7 +3788,7 @@ function triggerGalleryPick(){
   const pi = document.getElementById("cameraInputFile");
   if(pi){ pi.value=""; pi.click(); }
 }
-const MAX_FOTOS_POR_PACIENTE = 999; // Sin límite de cantidad
+// MOVED TO config.js — MAX_FOTOS_POR_PACIENTE
 
 async function handlePhoto(e){
   getDetailPid();
@@ -4526,54 +4390,8 @@ function togAsistioTrk(pid,svId,zona,si){
 }
 
 // ===== WHATSAPP =====
-const LASER_TPL=`Hola [Nombre]! Queremos recordarte que tu proxima sesion de *Depilacion Laser* esta por llegar. Agenda tu turno cuando quieras eligiendo el dia y horario que mas te convenga:
-
-[Link]
-
-Te esperamos con todo preparado para ti!`;
-const WA_TPL_DEFAULT={
-  1:`Hola [Nombre]! Desde *Elle Studio* te recordamos que tu proxima sesion de *[Servicio]* esta por llegar.
-
-Agenda tu turno aqui:
-[Link]
-
-Te esperamos!`,
-  2:`Hola [Nombre]! Te recordamos que *manana* tienes tu sesion de *[Servicio]* en *Elle Studio*.
-
-Av. Paz Soldan 235, San Isidro, Lima, Peru
-https://maps.google.com/?q=-12.0977,-77.0365
-Hora segun tu reserva
-
-- Llega 5 minutos antes
-- Zona limpia y sin cremas
-- Ropa comoda
-
-Te esperamos!`,
-  3:`Hola [Nombre]! Hoy es tu sesion de *[Servicio]* en *Elle Studio*!
-
-Av. Paz Soldan 235, San Isidro, Lima, Peru
-https://maps.google.com/?q=-12.0977,-77.0365
-
-Recuerda:
-- Zona limpia y sin cremas
-- Ropa comoda
-- Hidratate bien
-
-Te esperamos hoy!`
-};
-let waTpls=JSON.parse(localStorage.getItem('elleWaTpls')||'{}');
-let waCustomCards=JSON.parse(localStorage.getItem('elleWaCustom')||'[]');
-let waServiceTpls=JSON.parse(localStorage.getItem('elleWaSvcTpls')||'{}');
-const PC_TPL_DEFAULTS={
-  confirmacion:`Hola [Nombre]! ✨\n\nTu separación para *[Servicio]* en *Elle Studio* está registrada.\n\nElige tu horario aquí:\n[Link]\n\nAv. Paz Soldan 235, San Isidro, Lima, Peru\nhttps://maps.google.com/?q=Av+Paz+Soldan+235+San+Isidro+Lima+Peru\n\n¡Te esperamos! 🌸`,
-  dia_antes:`Hola [Nombre]! ⏰\n\nTe recordamos que *mañana* tienes tu sesión de *[Servicio]* en *Elle Studio*.\n\nAv. Paz Soldan 235, San Isidro, Lima, Peru\nhttps://maps.google.com/?q=Av+Paz+Soldan+235+San+Isidro+Lima+Peru\n\nRecuerda:\n- Zona limpia y sin cremas\n- Ropa cómoda\n\n¡Te esperamos! 🌸`,
-  mismo_dia:`Hola [Nombre]! 💜\n\nHoy es tu sesión de *[Servicio]* en *Elle Studio*!\n\nAv. Paz Soldan 235, San Isidro, Lima, Peru\nhttps://maps.google.com/?q=Av+Paz+Soldan+235+San+Isidro+Lima+Peru\n\nRecuerda:\n- Zona limpia y sin cremas\n- Ropa cómoda\n- Hidrátate bien\n\n¡Te esperamos! ✨`
-};
-let preCitaTemplates=JSON.parse(localStorage.getItem('ellePcTemplates')||'null')||{...PC_TPL_DEFAULTS};
-// Migrar template viejo si existe
-(function(){const old=localStorage.getItem('ellePcTemplate');if(old){try{preCitaTemplates.confirmacion=JSON.parse(old);localStorage.removeItem('ellePcTemplate');}catch(e){}}})();
+// MOVED TO config.js — LASER_TPL, WA_TPL_DEFAULT, waTpls, waCustomCards, waServiceTpls, PC_TPL_DEFAULTS, preCitaTemplates, WA_TPL
 function getWaTpl(n){return waTpls[n]||WA_TPL_DEFAULT[n];}
-const WA_TPL=WA_TPL_DEFAULT;
 
 function populateWaSelects(){
   // Now patient selection is via search input, just clear dropdowns
@@ -4946,23 +4764,8 @@ function openSettings(){
   renderWorkerPermsList();
   openModal('settingsModal');
 }
+// MOVED TO config.js — PERM_LABELS
 // === PERMISOS TRABAJADORA ===
-const PERM_LABELS={
-  eliminarPacientes:'🗑 Eliminar pacientes',
-  eliminarServicios:'🗑 Eliminar servicios',
-  eliminarZonas:'🗑 Eliminar zonas',
-  eliminarSesiones:'🗑 Eliminar sesiones',
-  eliminarPaquetes:'🗑 Eliminar paquetes',
-  eliminarPreCitas:'🗑 Eliminar pre-citas',
-  eliminarCitas:'🗑 Eliminar citas',
-  eliminarFotos:'🗑 Eliminar fotos',
-  eliminarMensajesWA:'🗑 Eliminar mensajes WhatsApp',
-  verPagos:'💰 Ver sección Pagos',
-  verComisiones:'💵 Ver comisiones',
-  verConfiguracion:'⚙️ Acceder a Configuración',
-  verPrecios:'💲 Ver lista de precios',
-  editarPrecios:'✏ Editar precios'
-};
 function renderWorkerPermsList(){
   const c=document.getElementById('workerPermsList');
   if(!c)return;
@@ -5109,7 +4912,7 @@ function renderAll(){renderAgendaHoy();renderAgendaSemanal();if(typeof renderMes
 
 
 // ===== PRE-CITAS DATA =====
-let preCitas=JSON.parse(localStorage.getItem('ce_v3_precitas')||'[]');
+// MOVED TO config.js — preCitas
 
 // ══════════════════════════════════════════════════════
 // MÓDULO 2 — Pre-citas: fuente única elle_precitas
@@ -5630,7 +5433,7 @@ function renderPreCitas(){
 
 // ===== PAGOS / REGISTROS (sistema independiente) =====
 // Estructura: registros = [{id, fecha, nombre, apellido, telefono, patientId|null, servicio, zonas, atendio, total, adelanto, comision, notas}]
-let registros = JSON.parse(localStorage.getItem('ce_v3_registros') || '[]');
+// MOVED TO config.js — registros
 
 // ══════════════════════════════════════════════════════
 // MÓDULO 5 — Pagos: fuente única elle_payments
@@ -6079,62 +5882,7 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 
 
 // ===== LOGIN & ROLES SYSTEM =====
-const PASSWORDS = {
-  admin: 'bc6e0f75f4e9f5c905cb5ae58eeee078538dbe63150b6b7205f839e3ac5514e5',
-  worker: '2c4b90224e2c428116c1289f7b9fe71d360ef1e9452b83a653881ce6acd3a223'
-};
-async function hashPw(str){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-let currentRole = null;
-let _selectedRole = null;
-
-function selectRole(role) {
-  _selectedRole = role;
-  document.getElementById('loginRoleBtns').style.opacity = '0.4';
-  document.getElementById('loginRoleBtns').style.pointerEvents = 'none';
-  const wrap = document.getElementById('loginPwWrap');
-  wrap.style.display='block';
-  document.getElementById('loginBack').style.display = 'block';
-  setTimeout(() => document.getElementById('loginPwInput').focus(), 100);
-}
-
-function backToRoles() {
-  _selectedRole = null;
-  document.getElementById('loginRoleBtns').style.opacity = '1';
-  document.getElementById('loginRoleBtns').style.pointerEvents = 'auto';
-  document.getElementById('loginPwWrap').style.display='none';
-  document.getElementById('loginPwInput').value = '';
-  document.getElementById('loginError').style.display = 'none';
-}
-
-async function doLogin() {
-  const pw = document.getElementById('loginPwInput').value.trim();
-  const errEl = document.getElementById('loginError');
-  const hashed = await hashPw(pw);
-  if (hashed === PASSWORDS[_selectedRole]) {
-    currentRole = _selectedRole;
-    localStorage.setItem('es_session_role', currentRole);
-    localStorage.setItem('es_session_ts', Date.now());
-    localStorage.removeItem('es_role'); // limpiar el viejo
-    document.getElementById('loginScreen').style.opacity = '0';
-    document.getElementById('loginScreen').style.transition = 'opacity 0.5s ease';
-    setTimeout(() => {
-      document.getElementById('loginScreen').style.display = 'none';
-      applyRoleRestrictions();
-      setTimeout(updateBackupReminderBanner, 600);
-      initFromSupabase();
-      setTimeout(renderCalFrames, 900);
-    }, 500);
-    errEl.style.display = 'none';
-  } else {
-    errEl.style.display = 'block';
-    document.getElementById('loginPwInput').value = '';
-    document.getElementById('loginPwInput').focus();
-  }
-}
+// MOVED TO auth.js — PASSWORDS, hashPw, currentRole, _selectedRole, selectRole, backToRoles, doLogin
 
 
 // ============================================================
@@ -6614,139 +6362,7 @@ function diagRunCmd(cmd){
 }
 
 
-function applyRoleRestrictions() {
-  const isWorker = currentRole === 'worker';
-  // Show terminal button only for admin
-  const termBtn = document.getElementById('terminalMenuBtn');
-  if(termBtn) termBtn.style.display = isWorker ? 'none' : 'block';
-  const ri = document.getElementById('roleIndicator');
-  if (ri) {
-    ri.style.display = 'flex';
-    ri.className = isWorker ? 'worker' : 'admin';
-    ri.textContent = isWorker ? '🌸 Trabajadora' : '🔑 Admin';
-  }
-
-  if (isWorker) {
-    // Ocultar pestaña Pagos
-    document.querySelectorAll('.tab').forEach(t => {
-      if (t.textContent.includes('Pagos')) t.style.display = 'none';
-    });
-    // Ocultar botones de Configuración y Respaldo
-    document.querySelectorAll('button').forEach(b => {
-      if (b.textContent.includes('Configuración') || b.textContent.includes('Respaldo')) {
-        b.style.display = 'none';
-      }
-    });
-    // Ocultar botón sesiones
-    const asb = document.getElementById('activeSessionsBtn');
-    if(asb) asb.style.display = 'none';
-    // Ocultar botones de eliminar paciente en cards
-    disableDeleteButtons();
-    // Añadir botón cerrar sesión
-    addLogoutBtn();
-  } else {
-    // Admin: mostrar todo + botón cerrar sesión + botón sesiones
-    const asb = document.getElementById('activeSessionsBtn');
-    if(asb) asb.style.display = 'flex';
-    addLogoutBtn();
-  }
-  // Registrar sesión activa en Supabase
-  registerSession();
-}
-
-function disableDeleteButtons() {
-  // Primero eliminar style anterior si existe (para re-aplicar al cambiar permisos)
-  const old=document.getElementById('_workerStyle');
-  if(old) old.remove();
-  const perms=WORKER_PERMS();
-  const rules=[];
-  // Cada permiso agrega selector si está desactivado
-  if(!perms.eliminarPacientes){rules.push('button[onclick*="deletePatient"]');}
-  if(!perms.eliminarServicios){rules.push('button[onclick*="deleteSvc"]','button[onclick*="removeService"]');}
-  if(!perms.eliminarZonas){rules.push('button[onclick*="delZone"]');}
-  if(!perms.eliminarSesiones){rules.push('button[onclick*="delSes"]');}
-  if(!perms.eliminarPaquetes){rules.push('button[onclick*="deletePaquete"]');}
-  if(!perms.eliminarPreCitas){rules.push('button[onclick*="deletePreCita"]');}
-  if(!perms.eliminarCitas){rules.push('button[onclick*="deleteCitaHoy"]');}
-  if(!perms.eliminarFotos){rules.push('button[onclick*="deleteCurrentPhoto"]');}
-  if(!perms.eliminarMensajesWA){rules.push('button[onclick*="deleteCustomCard"]');}
-  if(!perms.editarPrecios){rules.push('button[onclick*="deletePrecioItem"]','button[onclick*="deleteCategoria"]','button[onclick*="deleteServicio"]','button[onclick*="deletePromo"]');}
-  // Registros/pagos
-  rules.push('button[onclick*="deleteRegistro"]','button[onclick*="deleteAbono"]');
-  const css=[];
-  if(rules.length) css.push(rules.join(',\n')+' { display: none !important; }');
-  css.push('.worker-hide { display: none !important; }');
-  css.push('.worker-hide-comision { display: none !important; }');
-  if(!perms.verPagos){
-    css.push('#sec-pagos { display: none !important; }');
-    css.push('.tab:nth-child(5) { display: none !important; }');
-  }
-  if(!perms.verConfiguracion){
-    css.push('button[onclick*="openSettings"] { display: none !important; }');
-  }
-  if(!perms.verComisiones){
-    css.push('.worker-hide-comision { display: none !important; }');
-  }
-  // Botones permitidos SIEMPRE (independiente de eliminar)
-  css.push('button[onclick*="openAddZoneModal"], button[onclick*="openCameraCapture"], button[onclick*="photoInput"], button[onclick*="openNewPaqueteModal"], button[onclick*="openAddSvcModal"], button[onclick*="openAddSesModal"], button[onclick*="addSes"], button[onclick*="openNewPreCita"], button[onclick*="openNuevaCitaModal"], button[onclick*="openNewPatient"] { display: inline-flex !important; }');
-  css.push('#photoInput, #cameraInputCapture, #cameraInputFile { display: none !important; }');
-  const style = document.createElement('style');
-  style.id='_workerStyle';
-  style.textContent = css.join('\n');
-  document.head.appendChild(style);
-}
-// Obtener permisos actuales (default + config)
-function WORKER_PERMS(){
-  return Object.assign({},DEFAULT_WORKER_PERMS,appConfig.workerPerms||{});
-}
-// Guard para funciones de eliminar - acepta key de permiso específica
-function _workerGuard(accion,permKey){
-  if(currentRole!=='worker')return false;
-  const perms=WORKER_PERMS();
-  if(permKey&&perms[permKey]===true)return false; // admin le dio permiso
-  showToast('🔒 Sin permiso para '+accion+'. Pide a la administradora habilitarlo.','#c46060',4000);
-  return true;
-}
-
-function addLogoutBtn() {
-  // Logout now lives in the dropdown menu (#logoutBtnMenu), nothing to inject
-}
-
-function toggleHeaderMenu() {
-  const d = document.getElementById('headerDropdown');
-  d.style.display = d.style.display === 'none' ? 'block' : 'none';
-}
-function closeHeaderMenu() {
-  document.getElementById('headerDropdown').style.display = 'none';
-}
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('#headerMenuBtn') && !e.target.closest('#headerDropdown')) {
-    const d = document.getElementById('headerDropdown');
-    if (d) d.style.display = 'none';
-  }
-});
-function logout() {
-  if (!confirm('¿Cerrar sesión?')) return;
-  unregisterSession();
-  currentRole = null;
-  localStorage.removeItem('es_session_role');
-  localStorage.removeItem('es_session_ts');
-  localStorage.removeItem('es_role');
-  location.reload();
-}
-
-// Sesión persiste 7 días en localStorage
-(function checkSavedSession() {
-  const saved = localStorage.getItem('es_session_role');
-  const ts = parseInt(localStorage.getItem('es_session_ts')||'0');
-  const expired = Date.now() - ts > 7 * 24 * 60 * 60 * 1000;
-  if ((saved === 'admin' || saved === 'worker') && !expired) {
-    currentRole = saved;
-    const ls = document.getElementById('loginScreen');
-    if(ls) ls.style.display = 'none';
-    setTimeout(()=>{ applyRoleRestrictions(); initFromSupabase(); }, 50);
-  }
-})();
+// MOVED TO auth.js — applyRoleRestrictions, disableDeleteButtons, WORKER_PERMS, _workerGuard, addLogoutBtn, toggleHeaderMenu, closeHeaderMenu, logout, checkSavedSession
 
 // ===== INIT =====
 // Limpiar backups viejos al iniciar — Supabase es el respaldo real
@@ -6871,78 +6487,9 @@ function snoozeBackupReminder(){
 // ===== LISTA DE PRECIOS =====
 let _editPrecioCI=null,_editPrecioII=null,_editPromoIdx=null,_preciosSvcActivo='';
 
-const SVC_ICONS={'Depilación Láser':'✨','Aparatología':'💆','Skincare':'✅','Faciales':'🧖','Glúteos':'🍑','Otros':'💎'};
-
-const PRECIOS_DEFAULT={
-  servicios:['Depilación Láser','Faciales','Glúteos','Aparatología','Skincare'],
-  categorias:[
-    {servicio:'Depilación Láser',nombre:'Mini Zonas',items:[
-      {zona:'Frente',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-      {zona:'Entrecejo',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-      {zona:'Patilla',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-      {zona:'Bozo',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-      {zona:'Mejillas',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-      {zona:'Mentón',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-      {zona:'Dedos (manos y pies)',mSesion:25,mPaq3:null,mPaq6:null,mPaquete:45,hSesion:25,hPaq3:null,hPaq6:null,hPaquete:45},
-    ]},
-    {servicio:'Depilación Láser',nombre:'Zonas Pequeñas',items:[
-      {zona:'Axilas',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:35,hPaq3:90,hPaq6:165,hPaquete:75},
-      {zona:'Línea alba',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Pezones',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-    ]},
-    {servicio:'Depilación Láser',nombre:'Zonas Medias',items:[
-      {zona:'Media pierna',mSesion:95,mPaq3:255,mPaq6:480,mPaquete:225,hSesion:110,hPaq3:290,hPaq6:540,hPaquete:240},
-      {zona:'Medio Brazo',mSesion:95,mPaq3:255,mPaq6:480,mPaquete:225,hSesion:110,hPaq3:290,hPaq6:540,hPaquete:240},
-      {zona:'Medio pecho',mSesion:95,mPaq3:255,mPaq6:480,mPaquete:225,hSesion:110,hPaq3:290,hPaq6:540,hPaquete:240},
-      {zona:'Media espalda',mSesion:95,mPaq3:255,mPaq6:480,mPaquete:225,hSesion:110,hPaq3:290,hPaq6:540,hPaquete:240},
-    ]},
-    {servicio:'Depilación Láser',nombre:'Zonas Completas',items:[
-      {zona:'Pierna completa',mSesion:179.90,mPaq3:480,mPaq6:899,mPaquete:299.90,hSesion:179.90,hPaq3:480,hPaq6:899,hPaquete:399.90},
-      {zona:'Brazos completo',mSesion:90,mPaq3:240,mPaq6:450,mPaquete:220,hSesion:105,hPaq3:275,hPaq6:510,hPaquete:265},
-      {zona:'Pecho completo',mSesion:90,mPaq3:240,mPaq6:450,mPaquete:220,hSesion:105,hPaq3:275,hPaq6:510,hPaquete:265},
-      {zona:'Espalda completa',mSesion:90,mPaq3:240,mPaq6:450,mPaquete:220,hSesion:105,hPaq3:275,hPaq6:510,hPaquete:265},
-    ]},
-    {servicio:'Depilación Láser',nombre:'Zonas Íntimas (Mujer)',items:[
-      {zona:'Bikini',mSesion:45,mPaq3:120,mPaq6:225,mPaquete:135,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Bikini brasileño',mSesion:55,mPaq3:145,mPaq6:275,mPaquete:159.90,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Entre pierna',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Periné',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Perianal',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Interglútea',mSesion:35,mPaq3:90,mPaq6:165,mPaquete:75,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-    ]},
-    {servicio:'Depilación Láser',nombre:'Zonas Íntimas (Hombre)',items:[
-      {zona:'Pene',mSesion:null,mPaq3:null,mPaq6:null,mPaquete:null,hSesion:65,hPaq3:170,hPaq6:320,hPaquete:175},
-      {zona:'Testículos',mSesion:null,mPaq3:null,mPaq6:null,mPaquete:null,hSesion:55,hPaq3:145,hPaq6:275,hPaquete:145},
-    ]},
-    {servicio:'Glúteos',nombre:'Tratamientos',items:[
-      {zona:'Glúteos con aparatología',mSesion:80,mPaq3:210,mPaq6:390,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Moldeo corporal glúteos',mSesion:70,mPaq3:185,mPaq6:340,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Glúteos + masaje drenante',mSesion:100,mPaq3:265,mPaq6:495,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-    ]},
-    {servicio:'Faciales',nombre:'Tratamientos Faciales',items:[
-      {zona:'Limpieza facial profunda',mSesion:60,mPaq3:160,mPaq6:300,mPaquete:null,hSesion:60,hPaq3:160,hPaq6:300,hPaquete:null},
-      {zona:'Hidratación facial',mSesion:55,mPaq3:145,mPaq6:270,mPaquete:null,hSesion:55,hPaq3:145,hPaq6:270,hPaquete:null},
-      {zona:'Peeling químico',mSesion:80,mPaq3:210,mPaq6:390,mPaquete:null,hSesion:80,hPaq3:210,hPaq6:390,hPaquete:null},
-      {zona:'Radiofrecuencia facial',mSesion:90,mPaq3:240,mPaq6:450,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Microdermoabrasión',mSesion:75,mPaq3:195,mPaq6:365,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-    ]},
-    {servicio:'Aparatología',nombre:'Tratamientos Corporales',items:[
-      {zona:'Cavitación',mSesion:70,mPaq3:185,mPaq6:340,mPaquete:null,hSesion:70,hPaq3:185,hPaq6:340,hPaquete:null},
-      {zona:'Radiofrecuencia corporal',mSesion:80,mPaq3:210,mPaq6:390,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Presoterapia',mSesion:60,mPaq3:160,mPaq6:300,mPaquete:null,hSesion:null,hPaq3:null,hPaq6:null,hPaquete:null},
-    ]},
-    {servicio:'Skincare',nombre:'Cuidado de Piel',items:[
-      {zona:'Consulta + rutina personalizada',mSesion:50,mPaq3:null,mPaq6:null,mPaquete:null,hSesion:50,hPaq3:null,hPaq6:null,hPaquete:null},
-      {zona:'Tratamiento anti-acné',mSesion:70,mPaq3:185,mPaq6:340,mPaquete:null,hSesion:70,hPaq3:185,hPaq6:340,hPaquete:null},
-    ]},
-  ],
-  promociones:[
-    {nombre:'Bikini brasileño + Entre piernas',precio:159.90,mes:'Febrero'},
-    {nombre:'Piernas completas + Axilas',precio:199.90,mes:'Febrero'},
-  ]
-};
-
-// Migrate old data that doesn't have paq3/paq6
+// MOVED TO config.js — SVC_ICONS, PRECIOS_DEFAULT, migratePrecios, preciosData, savePrecios
+// MOVED TO utils.js — fmtS
+// (migratePrecios y preciosData re-declarados aquí para inicialización local)
 function migratePrecios(data){
   if(!data||!data.categorias)return data;
   data.categorias.forEach(cat=>{
@@ -6965,8 +6512,6 @@ function savePrecios(){
   try{localStorage.setItem('ellePrecios2',JSON.stringify(preciosData));}catch(e){console.error('savePrecios localStorage:',e);}
   supaSavePrecios();
 }
-
-function fmtS(v){if(v==null||v===''||v===undefined)return null;var n=parseFloat(v);if(isNaN(n))return null;var s=n.toFixed(2);return 'S/ '+(s.endsWith('.00')?s.slice(0,-3):s);}
 function fmtCell(v){const f=fmtS(v);return f?`<span class="precio-cell">${f}</span>`:`<span class="precio-dash">—</span>`;}
 
 function switchMpriceTab(panel,btn){
@@ -7159,12 +6704,7 @@ function renameZona(ci,ii,newName){
   showToast('✅ Zona renombrada');
 }
 
-function fmtN(v){
-  if(v==null||v===''||v===undefined)return `<span class="precio-dash">-</span>`;
-  var n=parseFloat(v);
-  if(isNaN(n))return `<span class="precio-dash">-</span>`;
-  return n%1===0?String(n):n.toFixed(2);
-}
+// MOVED TO utils.js — fmtN
 
 function setPrecioTab(svc,btn){
   _preciosSvcActivo=svc;
@@ -7351,7 +6891,7 @@ function deletePromo(i){
 }
 
 // ===== SESIONES ACTIVAS (solo admin) =====
-const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+// MOVED TO config.js — SESSION_ID
 let _sessionHeartbeat = null;
 
 async function getPublicIP() {
