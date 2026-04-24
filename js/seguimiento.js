@@ -1,5 +1,3 @@
-}
-
 // ===== TRACKING =====
 let _tf='';let _trkSort={col:'fecha',dir:-1};let _trkFilters={search:'',svc:'',month:'',cub:''};
 

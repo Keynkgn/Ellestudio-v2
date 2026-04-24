@@ -83,6 +83,8 @@ async function migratePhotosToStorage(){
     if(changed){try{await supaUpsertPatient(p);}catch(e){}}
   }
   if(migrated>0){save();console.log(`[migration] ${migrated} fotos migradas a Supabase Storage.`);}
+}
+
 // ===== BACKUP =====
 function exportBackup(){
   if(typeof XLSX==='undefined'){showToast('❌ Error: librería Excel no cargada','#c46060');return;}
@@ -195,6 +197,7 @@ function exportBackup(){
   }catch(err){console.error(err);showToast('❌ Error al generar respaldo','#c46060');}
 }
 function doImport(){const file=document.getElementById('importFile').files[0];if(!file){alert('Selecciona un archivo .json');return;}const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);if(!data.patients||!Array.isArray(data.patients))throw new Error();if(!confirm(`¿Restaurar ${data.patients.length} pacientes?`))return;patients=data.patients;save();if(data.preCitas){preCitas=data.preCitas;savePC();(async()=>{for(const pc of preCitas){try{await supa.from('elle_precitas').upsert([_pcToDb(pc)]);}catch(e){}}console.log('[import] precitas sincronizadas:',preCitas.length);})();}
+if(data.registros){registros=data.registros;saveReg();(async()=>{for(const r of registros){try{await supa.from('elle_payments').upsert([{id:String(r.id||Date.now()),fecha:r.fecha||null,nombre:r.nombre||'',apellido:r.apellido||'',telefono:r.telefono||'',servicio:r.servicio||'',zonas:r.zonas||'',total:r.total!=null?parseFloat(r.total):null,adelanto:r.adelanto!=null?parseFloat(r.adelanto):null,atendio:r.atendio||'',comision:r.comision!=null?parseFloat(r.comision):null,notas:r.notas||'',raw_json:r}]);}catch(e){}}console.log('[import] registros sincronizados:',registros.length);})();}if(data.config){appConfig={...appConfig,...data.config};saveConfig();}closeModal('importModal');applyConfigToUI();renderAll();showToast(`✅ ${patients.length} pacientes restauradas`,'#6a9e7a');}catch{alert('Archivo inválido.');}};reader.readAsText(file);}
 
 let _sf='';
 function renderPatients(list){

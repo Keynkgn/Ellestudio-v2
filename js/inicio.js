@@ -37,6 +37,8 @@ function _abrirAgendaSvc(pacId, svcId){
       checkNcConflict();
     },120);
   }
+}
+
 // ===== AGENDA DEL DÍA =====
 function renderAgendaHoy(){
   const el=document.getElementById('agendaHoyContainer');
