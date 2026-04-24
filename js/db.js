@@ -34,8 +34,8 @@ async function initPatients(){
             return Object.assign({},z.raw_json||{},{id:z.id,nombre:z.nombre||'',estado:z.estado||'activa',sesiones});
           });
           // Si no hay zonas en DB (sync falló y las borró), recuperar desde raw_json del servicio
-          const zonas=_dbZonas.length>0?_dbZonas:(rp.zonas||[]);
           const rp=s.raw_json||{};
+          const zonas=_dbZonas.length>0?_dbZonas:(rp.zonas||[]);
           const pago=Object.assign({},rp.pago||{},{
             precioTotal:s.pago_precio_total!=null?parseFloat(s.pago_precio_total):(rp.pago&&rp.pago.precioTotal)||0,
             separacion:s.pago_separacion!=null?parseFloat(s.pago_separacion):(rp.pago&&rp.pago.separacion)||0,
