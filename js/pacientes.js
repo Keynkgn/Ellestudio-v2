@@ -1,4 +1,4 @@
-// ── Compress image — target under 150KB, MAX 600px ───────────────────────────
+// ── Pacientes v2 ──────────────────────────────────────────────────────────────
 function _compressToBlob(file){
   return new Promise(resolve=>{
     const reader=new FileReader();
