@@ -146,7 +146,7 @@ function applyConfigToUI(){
   const trkSvc=document.getElementById('trk-svc');
   if(trkSvc)trkSvc.innerHTML='<option value="">Todos los servicios</option>'+svcs.map(s=>`<option>${s}</option>`).join('');
   const st=document.getElementById('serviceTabsContainer');
-  if(st)st.innerHTML='<div class="service-tab active" onclick="filterTracking(\'\',this)">Todos</div>'+svcs.map(s=>`<div class="service-tab" onclick="filterTracking(\'${s}\',this)">${s.split(' ').slice(0,2).join(' ')}</div>`).join('');
+  if(st)st.innerHTML='<div class="service-tab active" onclick="filterTracking(\'\',this)">Todos</div>'+svcs.map(s=>`<div class="service-tab" onclick="filterTracking(\'${s}\',this)">${tcase(s).split(' ').slice(0,2).join(' ')}</div>`).join('');
   const bl=document.getElementById('bookingLink');if(bl)bl.value=appConfig.calOtros;
   const bl2=document.getElementById('bookingLink2');if(bl2)bl2.value=appConfig.calOtros2||CAL_LINKS.cal03;
   const cl=document.getElementById('calendarLink');if(cl)cl.value=appConfig.calLaser;

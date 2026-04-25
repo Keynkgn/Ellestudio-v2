@@ -296,11 +296,13 @@ function trkExportExcel(){
   const data=rows.map(({p,sv,z,s,i})=>{
     const next=s.fecha?_nextForSes(sv,s):'';
     return {
-      'Paciente': p.nombre+' '+p.apellido,
+      'Paciente': tcase(p.nombre+' '+p.apellido),
       'Teléfono': p.telefono||'',
-      'Servicio': sv.servicio||'',
+      'Servicio': tcase(sv.servicio||''),
       'Cubículo': sv.cubiculo||'',
+      'Inicio Servicio': fmtDate(sv.fechaInicio||''),
       'Zona': z.nombre||'',
+      'Estado Zona': z.estado||'Activa',
       'Mes': monthName(s.fecha),
       'Fecha': fmtDate(s.fecha),
       'Sesión #': i+1,
@@ -312,12 +314,13 @@ function trkExportExcel(){
       'Rate (J)': s.rate||'',
       'Pulse (ms)': s.pulse||'',
       'CM²': s.cm2||'',
-      'Notas': s.comentarios||''
+      'Notas sesión': s.comentarios||'',
+      'Notas paciente': p.comentarios||''
     };
   });
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:26},{wch:14},{wch:20},{wch:10},{wch:20},{wch:12},{wch:12},{wch:9},{wch:12},{wch:14},{wch:9},{wch:12},{wch:14},{wch:9},{wch:9},{wch:9},{wch:35}];
+  ws['!cols']=[{wch:26},{wch:14},{wch:22},{wch:10},{wch:14},{wch:20},{wch:12},{wch:12},{wch:12},{wch:9},{wch:12},{wch:14},{wch:9},{wch:12},{wch:14},{wch:9},{wch:9},{wch:9},{wch:30},{wch:35}];
   XLSX.utils.book_append_sheet(wb,ws,'Seguimiento');
   const hoy=new Date().toISOString().split('T')[0];
   XLSX.writeFile(wb,`Seguimiento_${hoy}.xlsx`);
